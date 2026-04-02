@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CompanyConnect – Infosys Springboard Tracker</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    body { background: #0e0a2e; color: #fff; overflow-x: hidden; }
+    .hero-nav {
+      background: rgba(14,10,46,0.85); backdrop-filter: blur(20px);
+      padding: 0 40px; height: 68px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .hero-nav .brand-name { color: #fff; font-size: 20px; }
+    .hero-nav .brand-sub { color: rgba(255,255,255,0.5); }
+    .hnav-links { display: flex; align-items: center; gap: 6px; }
+    .hnav-links a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    .hnav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+    .hnav-links .btn-nav-hero { background: #3b28cc; color: #fff; border-radius: 9px; font-weight: 700; }
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 80px 40px; }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(59,40,204,0.5) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 20% 80%, rgba(124,58,237,0.3) 0%, transparent 60%), #0e0a2e; }
+    .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+    .hero-inner { position: relative; z-index: 1; max-width: 1200px; width: 100%; display: grid; grid-template-columns: 1fr 420px; gap: 60px; align-items: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,40,204,0.25); border: 1px solid rgba(59,40,204,0.5); color: #a78bfa; padding: 6px 16px; border-radius: 99px; font-size: 13px; font-family: var(--font-mono); margin-bottom: 24px; }
+    .hero-title { font-family: var(--font-head); font-size: clamp(36px,5vw,56px); font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
+    .hero-title .accent { background: linear-gradient(135deg, #00c2ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-desc { color: rgba(255,255,255,0.65); font-size: 16px; line-height: 1.7; max-width: 480px; margin-bottom: 36px; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-hero-primary { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#3b28cc,#5b45e8); color: #fff; padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 30px rgba(59,40,204,0.4); transition: all 0.2s; }
+    .btn-hero-primary:hover { transform: translateY(-2px); }
+    .btn-hero-outline { display: inline-flex; align-items: center; gap: 8px; border: 2px solid rgba(255,255,255,0.25); color: #fff; padding: 13px 26px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .btn-hero-outline:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); }
+    .workflow-card { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 28px; }
+    .workflow-card h3 { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; font-family: var(--font-mono); margin-bottom: 20px; }
+    .wf-step { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.04); margin-bottom: 8px; }
+    .wf-num { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#3b28cc,#7c3aed); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .wf-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); }
+    .stats-bar { background: rgba(255,255,255,0.04); border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 32px 40px; }
+    .stats-bar-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; text-align: center; }
+    .sb-val { font-family: var(--font-head); font-size: 42px; font-weight: 800; background: linear-gradient(135deg,#00c2ff,#7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sb-label { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+    .programs-section { padding: 80px 40px; }
+    .programs-inner { max-width: 1200px; margin: 0 auto; }
+    .section-badge { display: inline-block; background: rgba(59,40,204,0.2); border: 1px solid rgba(59,40,204,0.4); color: #a78bfa; padding: 4px 14px; border-radius: 99px; font-size: 12px; font-family: var(--font-mono); margin-bottom: 16px; }
+    .section-title { font-family: var(--font-head); font-size: 36px; font-weight: 800; color: #fff; letter-spacing: -0.8px; margin-bottom: 8px; }
+    .section-desc { color: rgba(255,255,255,0.5); font-size: 15px; margin-bottom: 40px; }
+    .prog-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+    .prog-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; transition: all 0.3s; display: flex; flex-direction: column; }
+    .prog-card:hover { border-color: rgba(59,40,204,0.5); background: rgba(59,40,204,0.1); transform: translateY(-4px); }
+    .prog-type-badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 11px; font-family: var(--font-mono); font-weight: 600; margin-bottom: 14px; }
+    .prog-dur { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.4); }
+    .prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .prog-type-Training { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .prog-type-Internship { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .prog-type-Certification { background: rgba(52,211,153,0.15); color: #34d399; }
+    .prog-type-Workshop { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .prog-name { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .prog-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 20px; flex: 1; }
+    .prog-enroll { display: block; text-align: center; padding: 10px; background: linear-gradient(135deg,#3b28cc,#5b45e8); color: #fff; border-radius: 9px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .prog-enroll:hover { opacity: 0.85; }
+    .footer { background: rgba(0,0,0,0.3); padding: 32px 40px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; }
+    .footer strong { color: rgba(255,255,255,0.7); }
+  </style>
+</head>
+<body>
+  <nav class="hero-nav">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;">
+      <div class="brand-hex">⬡</div>
+      <div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div>
+    </a>
+    <div class="hnav-links">
+      <a href="#programs">Programs</a>
+      <a href="#stats">Stats</a>
+      <a href="login.html">Student Login</a>
+      <a href="admin-login.html" class="btn-nav-hero">Admin Login</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">🎓 St. Joseph's College of Engineering</div>
+        <h1 class="hero-title">Track Infosys Springboard<br><span class="accent">Participation</span> Easily</h1>
+        <p class="hero-desc">A centralized platform for students, placement coordinators, and faculty to manage Student Enablement Programs, Virtual Internships, certificates, and verification workflows.</p>
+        <div class="hero-actions">
+          <a href="login.html" class="btn-hero-primary">🎓 Student Login / Register</a>
+          <a href="admin-login.html" class="btn-hero-outline">⚙️ Admin Login</a>
+        </div>
+      </div>
+      <div class="workflow-card">
+        <h3>Workflow</h3>
+        <div class="wf-step"><div class="wf-num">1</div><div class="wf-label">Student Registers</div></div>
+        <div class="wf-step"><div class="wf-num">2</div><div class="wf-label">Select Infosys Program</div></div>
+        <div class="wf-step"><div class="wf-num">3</div><div class="wf-label">Upload Proof &amp; Certificate</div></div>
+        <div class="wf-step"><div class="wf-num">4</div><div class="wf-label">Admin Verification</div></div>
+        <div class="wf-step"><div class="wf-num">5</div><div class="wf-label">Track Status &amp; Reports</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-bar" id="stats">
+    <div class="stats-bar-inner">
+      <div><div class="sb-val" id="s1">0</div><div class="sb-label">Registered Students</div></div>
+      <div><div class="sb-val" id="s2">0</div><div class="sb-label">Infosys Springboard Enrolled</div></div>
+      <div><div class="sb-val" id="s3">0</div><div class="sb-label">Virtual Internship Completed</div></div>
+      <div><div class="sb-val" id="s4">0</div><div class="sb-label">Certificates Verified</div></div>
+    </div>
+  </div>
+
+  <section class="programs-section" id="programs">
+    <div class="programs-inner">
+      <div class="section-badge">Available Programs</div>
+      <h2 class="section-title">Infosys Programs</h2>
+      <p class="section-desc">Enroll, track, and get certified across all Infosys Springboard programs.</p>
+      <div class="prog-grid" id="progGrid"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <strong>CompanyConnect</strong> — Infosys Springboard Student Enablement & Virtual Internship Tracker<br>
+    St. Joseph's College of Engineering &amp; St. Joseph's Institute of Technology
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const stats = getStats();
+    const vals = [stats.totalStudents, stats.enrolled, stats.completed, stats.verified];
+    ['s1','s2','s3','s4'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      const target = vals[i];
+      const dur = 1600, start = performance.now();
+      function step(now) {
+        const t = Math.min((now-start)/dur,1), ease = 1-Math.pow(1-t,3);
+        el.textContent = Math.round(ease*target);
+        if(t<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+    const programs = DB.getArr('programs');
+    document.getElementById('progGrid').innerHTML = programs.map(p => `
+      <div class="prog-card">
+        <div class="prog-row">
+          <span class="prog-type-badge prog-type-${p.type}">${p.type}</span>
+          <span class="prog-dur">${p.duration}</span>
+        </div>
+        <div class="prog-name">${p.name}</div>
+        <div class="prog-desc">${p.desc}</div>
+        <a href="login.html" class="prog-enroll">Enroll Now →</a>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Login – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <style>
+    body { background: linear-gradient(135deg, #0e0a2e 0%, #1a1060 50%, #0e0a2e 100%); min-height: 100vh; display: flex; flex-direction: column; }
+    .auth-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .auth-box { background: #fff; border-radius: 24px; box-shadow: 0 30px 80px rgba(0,0,0,0.4); width: 100%; max-width: 520px; overflow: hidden; }
+    .auth-top { background: linear-gradient(135deg, #3b28cc, #7c3aed); padding: 32px 36px 28px; }
+    .auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .auth-logo-hex { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .auth-logo-name { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: #fff; }
+    .auth-logo-sub { font-size: 11px; color: rgba(255,255,255,0.6); font-family: var(--font-mono); }
+    .auth-top h2 { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: #fff; }
+    .auth-top p { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 4px; }
+    .auth-body { padding: 32px 36px; }
+    .auth-tabs { display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+    .auth-tab { flex: 1; padding: 9px; text-align: center; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text3); transition: all 0.2s; font-family: var(--font-body); }
+    .auth-tab.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .auth-footer { text-align: center; padding: 0 36px 28px; font-size: 13px; color: var(--text3); }
+    .auth-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <div class="auth-top">
+        <div class="auth-logo">
+          <div class="auth-logo-hex">⬡</div>
+          <div><div class="auth-logo-name">CompanyConnect</div><div class="auth-logo-sub">Infosys Springboard Tracker</div></div>
+        </div>
+        <h2>Student Portal</h2>
+        <p>St. Joseph's College of Engineering</p>
+      </div>
+      <div class="auth-body">
+        <div id="alertBox"></div>
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+          <button class="auth-tab" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="loginPanel">
+          <div class="form-group">
+            <label class="form-label">College Email <span class="req">*</span></label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="yourname@stjosephs.ac.in"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password <span class="req">*</span></label>
+            <input type="password" id="loginPass" class="form-control" placeholder="Enter password"/>
+          </div>
+          <button class="btn btn-primary btn-full btn-lg" id="loginBtn" onclick="doLogin()">Login →</button>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="registerPanel" style="display:none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name (CAPS) <span class="req">*</span></label>
+              <input type="text" id="rName" class="form-control" placeholder="FIRSTNAME LASTNAME" style="text-transform:uppercase;"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Register Number <span class="req">*</span></label>
+              <input type="text" id="rReg" class="form-control" placeholder="312323205041"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">College Email <span class="req">*</span></label>
+              <input type="email" id="rEmail" class="form-control" placeholder="yourname@stjosephs.ac.in"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number <span class="req">*</span></label>
+              <input type="tel" id="rPhone" class="form-control" placeholder="9876543210"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Department <span class="req">*</span></label>
+              <select id="rDept" class="form-control">
+                <option value="">Select</option>
+                <option>CSE</option><option>IT</option><option>AML</option>
+                <option>ADS</option><option>ECE</option><option>EEE</option>
+                <option>EIE</option><option>Bio</option><option>Chem</option><option>Mech</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Batch <span class="req">*</span></label>
+              <select id="rYear" class="form-control">
+                <option>2022-26</option><option>2023-27</option><option>2024-28</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Section</label>
+              <input type="text" id="rSection" class="form-control" placeholder="A / B"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <select id="rGender" class="form-control">
+                <option>Male</option><option>Female</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">College <span class="req">*</span></label>
+            <select id="rCollege" class="form-control">
+              <option>St. Joseph's College of Engineering</option>
+              <option>St. Joseph's Institute of Technology</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Password <span class="req">*</span></label>
+              <input type="password" id="rPass" class="form-control" placeholder="Create password"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password <span class="req">*</span></label>
+              <input type="password" id="rPass2" class="form-control" placeholder="Repeat password"/>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full btn-lg" id="registerBtn" onclick="doRegister()">Create Account →</button>
+        </div>
+      </div>
+      <div class="auth-footer"><a href="index.html">← Back to Home</a> &nbsp;|&nbsp; <a href="admin-login.html">Admin Login</a></div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register')));
+      document.getElementById('loginPanel').style.display = tab === 'login' ? '' : 'none';
+      document.getElementById('registerPanel').style.display = tab === 'register' ? '' : 'none';
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      if (!email || !pass) return showAlert('alertBox', 'Please fill all fields.', 'error');
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'Logging in...';
+      try {
+        // Sign in with Firebase Auth
+        const cred = await firebase.auth().signInWithEmailAndPassword(email, pass);
+        const idToken = await cred.user.getIdToken();
+        // Verify with backend (checks approval status)
+        const data = await apiCall('POST', '/auth/login/student', { idToken });
+        Auth.setToken(data.token);
+        Auth.setUser(data.student);
+        showAlert('alertBox', 'Login successful! Redirecting...', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      } catch (err) {
+        showAlert('alertBox', err.message, 'error');
+        btn.disabled = false; btn.textContent = 'Login →';
+      }
+    }
+
+    async function doRegister() {
+      const name = document.getElementById('rName').value.trim().toUpperCase();
+      const reg = document.getElementById('rReg').value.trim();
+      const email = document.getElementById('rEmail').value.trim();
+      const phone = document.getElementById('rPhone').value.trim();
+      const dept = document.getElementById('rDept').value;
+      const year = document.getElementById('rYear').value;
+      const section = document.getElementById('rSection').value.trim();
+      const gender = document.getElementById('rGender').value;
+      const college = document.getElementById('rCollege').value;
+      const pass = document.getElementById('rPass').value;
+      const pass2 = document.getElementById('rPass2').value;
+
+      if (!name || !reg || !email || !phone || !dept || !pass) return showAlert('alertBox', 'Please fill all required fields.', 'error');
+      if (pass !== pass2) return showAlert('alertBox', 'Passwords do not match.', 'error');
+      if (pass.length < 6) return showAlert('alertBox', 'Password must be at least 6 characters.', 'error');
+
+      const btn = document.getElementById('registerBtn');
+      btn.disabled = true; btn.textContent = 'Registering...';
+      try {
+        await apiCall('POST', '/auth/register/student', { email, password: pass, name, registerNumber: reg, department: dept, year, section, phone, college, gender });
+        showAlert('alertBox', '✅ Registration request sent! Please wait for admin approval before logging in.', 'success');
+        setTimeout(() => switchTab('login'), 3000);
+      } catch (err) {
+        showAlert('alertBox', err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Create Account →';
+      }
+    }
+  </script>
+</body>
+</html>

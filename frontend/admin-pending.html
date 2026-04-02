@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pending Approvals – Admin – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div></a>
+    <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim">
+        <div class="breadcrumb">Admin / <span>Pending Approvals</span></div>
+        <h1>Pending Student Registrations</h1>
+        <p>Review and approve or reject student registration requests.</p>
+      </div>
+      <div id="alertBox"></div>
+      <div id="pendingCards" class="anim anim-1"><p class="text-muted">Loading...</p></div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const admin = requireAdmin();
+    if (admin) {
+      document.getElementById('navAdmin').textContent = admin.name;
+      document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-pending.html');
+      loadPending();
+    }
+
+    async function loadPending() {
+      try {
+        const students = await apiCall('GET', '/admin/students/pending');
+        renderCards(students);
+      } catch (err) {
+        document.getElementById('pendingCards').innerHTML = `<div class="card"><p class="text-muted">${err.message}</p></div>`;
+      }
+    }
+
+    function renderCards(students) {
+      const el = document.getElementById('pendingCards');
+      if (!students.length) {
+        el.innerHTML = '<div class="card"><p style="text-align:center;padding:32px;" class="text-muted">No pending registrations. 🎉</p></div>';
+        return;
+      }
+      el.innerHTML = students.map(s => `
+        <div class="card mb-4" id="card_${s.id}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+            <div>
+              <div style="font-family:var(--font-head);font-size:17px;font-weight:700;">${s.name}</div>
+              <div class="text-mono" style="margin-top:2px;">${s.registerNumber} · ${s.department} · ${s.year}</div>
+              <div style="margin-top:4px;font-size:13px;color:var(--text2);">${s.email} · ${s.phone}</div>
+              <div style="margin-top:4px;font-size:12px;color:var(--text3);">${s.college}</div>
+            </div>
+            <div>${badgeHTML('pending')}</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rejection Reason (required only for reject)</label>
+            <input type="text" id="reason_${s.id}" class="form-control" placeholder="e.g. Invalid register number"/>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-success btn-sm" onclick="approveStudent('${s.id}')">✅ Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectStudent('${s.id}')">❌ Reject</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function approveStudent(uid) {
+      try {
+        await apiCall('PUT', `/admin/students/${uid}/approve`);
+        showAlert('alertBox', 'Student approved successfully.', 'success');
+        document.getElementById(`card_${uid}`)?.remove();
+      } catch (err) {
+        showAlert('alertBox', err.message, 'error');
+      }
+    }
+
+    async function rejectStudent(uid) {
+      const reason = document.getElementById(`reason_${uid}`).value.trim();
+      if (!reason) return showAlert('alertBox', 'Please provide a rejection reason.', 'error');
+      try {
+        await apiCall('PUT', `/admin/students/${uid}/reject`, { reason });
+        showAlert('alertBox', 'Student rejected.', 'success');
+        document.getElementById(`card_${uid}`)?.remove();
+      } catch (err) {
+        showAlert('alertBox', err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

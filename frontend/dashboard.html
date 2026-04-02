@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div></a>
+    <div class="nav-links"><span id="navUser" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="login.html" onclick="doLogout()" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Student Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim">
+        <div class="breadcrumb">Student / <span>Dashboard</span></div>
+        <h1 id="welcomeHead">Welcome back 👋</h1>
+        <p>Track your Infosys Springboard participation and program status here.</p>
+      </div>
+      <div class="stats-row anim anim-1" id="statsRow"></div>
+      <div class="grid-sidebar anim anim-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">My Submissions</div>
+            <a href="participation.html" class="btn btn-sm btn-outline">+ New Submission</a>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Program</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="subBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card" id="profileCard">
+            <div class="card-header"><div class="card-title">My Profile</div><a href="profile.html" class="btn btn-sm btn-outline">Edit</a></div>
+            <div id="profileInfo"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Quick Actions</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <a href="participation.html" class="btn btn-primary btn-full">📝 Submit Participation</a>
+              <a href="upload.html" class="btn btn-outline btn-full">📎 Submit Documents</a>
+              <a href="status.html" class="btn btn-outline btn-full">🔍 Track Status</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const user = requireStudent();
+    if (user) {
+      document.getElementById('navUser').textContent = user.name;
+      document.getElementById('welcomeHead').textContent = `Welcome back, ${user.name?.split(' ')[0]} 👋`;
+      document.getElementById('sidebarLinks').innerHTML = buildStudentNav('dashboard.html');
+
+      document.getElementById('profileInfo').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span class="text-muted">Register No</span><span class="text-mono">${user.registerNumber || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span class="text-muted">Department</span><span style="font-weight:600;">${user.department || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span class="text-muted">Batch</span><span>${user.year || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;"><span class="text-muted">College</span><span style="font-size:12px;">${user.college || '—'}</span></div>
+        </div>`;
+
+      loadDashboardData();
+    }
+
+    async function loadDashboardData() {
+      try {
+        const [parts, docs] = await Promise.all([
+          apiCall('GET', '/student/participation'),
+          apiCall('GET', '/upload/my'),
+        ]);
+
+        const completed = parts.filter(p => p.status === 'Completed').length;
+        const verified = docs.filter(d => d.status === 'Verified').length;
+
+        document.getElementById('statsRow').innerHTML = `
+          <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-label">Programs Enrolled</div><div class="stat-value">${parts.length}</div></div>
+          <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Completed</div><div class="stat-value">${completed}</div></div>
+          <div class="stat-card"><div class="stat-icon">📎</div><div class="stat-label">Docs Submitted</div><div class="stat-value">${docs.length}</div></div>
+          <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-label">Docs Verified</div><div class="stat-value">${verified}</div></div>`;
+
+        const tbody = document.getElementById('subBody');
+        if (!parts.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:32px;">No submissions yet. <a href="participation.html">Submit now →</a></td></tr>';
+        } else {
+          tbody.innerHTML = parts.map(p => `
+            <tr>
+              <td class="td-name">${p.programName}</td>
+              <td>${typeBadge(p.programType)}</td>
+              <td>${badgeHTML(p.status)}</td>
+              <td class="td-mono">${formatDate(p.submittedOn)}</td>
+            </tr>`).join('');
+        }
+      } catch (err) {
+        document.getElementById('statsRow').innerHTML = `<p class="text-muted">${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

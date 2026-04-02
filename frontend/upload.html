@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Documents – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div></a>
+    <div class="nav-links"><span id="navUser" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="login.html" onclick="doLogout()" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Student Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim"><div class="breadcrumb">Student / <span>Submit Documents</span></div><h1>Submit Documents</h1><p>Share your internship, project, or certificate details via Google Drive link.</p></div>
+      <div id="alertBox"></div>
+      <div class="grid-sidebar anim anim-1">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Submit Document Link</div><div class="card-tag">Google Drive</div></div>
+          <div class="form-group">
+            <label class="form-label">Program / Activity Name <span class="req">*</span></label>
+            <input type="text" id="programName" class="form-control" placeholder="e.g. Infosys Virtual Internship"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Document Type <span class="req">*</span></label>
+            <select id="docType" class="form-control">
+              <option>Internship Completion Certificate</option>
+              <option>Project Report</option>
+              <option>Course Completion Certificate</option>
+              <option>Registration Screenshot</option>
+              <option>Offer Letter</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Drive / Docs Link <span class="req">*</span></label>
+            <input type="url" id="driveLink" class="form-control" placeholder="https://drive.google.com/file/d/..."/>
+            <small style="color:var(--text3);font-size:11px;">Make sure the link is set to "Anyone with the link can view"</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description (optional)</label>
+            <textarea id="description" class="form-control" rows="3" placeholder="Brief description of the document..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-lg" id="submitBtn" onclick="submitDoc()">📎 Submit Document</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">My Submitted Documents</div></div>
+          <div id="docsList"><p class="text-muted">Loading...</p></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const user = requireStudent();
+    if (user) {
+      document.getElementById('navUser').textContent = user.name;
+      document.getElementById('sidebarLinks').innerHTML = buildStudentNav('upload.html');
+      loadMyDocs();
+    }
+
+    async function submitDoc() {
+      const programName = document.getElementById('programName').value.trim();
+      const docType = document.getElementById('docType').value;
+      const driveLink = document.getElementById('driveLink').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!programName || !driveLink) return showAlert('alertBox', 'Program name and drive link are required.', 'error');
+      if (!driveLink.startsWith('http')) return showAlert('alertBox', 'Please enter a valid URL.', 'error');
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+      try {
+        await apiCall('POST', '/upload', { programName, docType, driveLink, description });
+        showAlert('alertBox', 'Document submitted successfully! Pending admin review.', 'success');
+        document.getElementById('programName').value = '';
+        document.getElementById('driveLink').value = '';
+        document.getElementById('description').value = '';
+        loadMyDocs();
+      } catch (err) {
+        showAlert('alertBox', err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '📎 Submit Document';
+      }
+    }
+
+    async function loadMyDocs() {
+      try {
+        const docs = await apiCall('GET', '/upload/my');
+        renderDocs(docs);
+      } catch (err) {
+        document.getElementById('docsList').innerHTML = `<p class="text-muted">${err.message}</p>`;
+      }
+    }
+
+    function renderDocs(docs) {
+      const el = document.getElementById('docsList');
+      if (!docs.length) { el.innerHTML = '<p class="text-muted">No documents submitted yet.</p>'; return; }
+      el.innerHTML = docs.map(d => `
+        <div style="padding:14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);margin-bottom:10px;">
+          <div style="font-weight:600;font-size:13.5px;">${d.programName}</div>
+          <div style="font-size:12px;color:var(--text2);margin:4px 0;">${d.docType}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+            ${badgeHTML(d.status)}
+            <a href="${d.driveLink}" target="_blank" style="font-size:12px;color:var(--primary);">🔗 View</a>
+            <span class="text-mono">${formatDate(d.submittedAt)}</span>
+          </div>
+          ${d.adminRemark ? `<div style="margin-top:8px;padding:8px;background:#fff3cd;border-radius:6px;font-size:12px;">⚠️ Admin: ${d.adminRemark}</div>` : ''}
+        </div>`).join('');
+    }
+  </script>
+</body>
+</html>

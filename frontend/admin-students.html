@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Students – Admin – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div></a>
+    <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim"><div class="breadcrumb">Admin / <span>Students</span></div><h1>All Students</h1><p>View all approved registered students.</p></div>
+
+      <div class="card anim anim-1 mb-4">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="flex:1;min-width:150px;margin:0;">
+            <label class="form-label">Search</label>
+            <input id="fSearch" class="form-control" placeholder="Name or Register No..." oninput="filterTable()"/>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Department</label>
+            <select id="fDept" class="form-control" onchange="filterTable()">
+              <option value="">All Depts</option>
+              <option>CSE</option><option>IT</option><option>AML</option><option>ADS</option>
+              <option>ECE</option><option>EEE</option><option>EIE</option><option>Mech</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Batch</label>
+            <select id="fBatch" class="form-control" onchange="filterTable()">
+              <option value="">All Batches</option>
+              <option>2022-26</option><option>2023-27</option><option>2024-28</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card anim anim-2">
+        <div class="card-header">
+          <div class="card-title">Students (<span id="count">0</span>)</div>
+          <div class="card-tag">APPROVED</div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Reg No</th><th>Dept</th><th>Batch</th><th>Email</th><th>Phone</th><th>College</th></tr></thead>
+            <tbody id="studentsTable"><tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const admin = requireAdmin();
+    let allStudents = [];
+
+    if (admin) {
+      document.getElementById('navAdmin').textContent = admin.name;
+      document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-students.html');
+      loadStudents();
+    }
+
+    async function loadStudents() {
+      try {
+        allStudents = await apiCall('GET', '/admin/students');
+        filterTable();
+      } catch (err) {
+        document.getElementById('studentsTable').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);">${err.message}</td></tr>`;
+      }
+    }
+
+    function filterTable() {
+      const search = document.getElementById('fSearch').value.toLowerCase();
+      const dept = document.getElementById('fDept').value;
+      const batch = document.getElementById('fBatch').value;
+
+      const filtered = allStudents.filter(u =>
+        (!search || u.name?.toLowerCase().includes(search) || u.registerNumber?.includes(search)) &&
+        (!dept || u.department === dept) &&
+        (!batch || u.year === batch)
+      );
+
+      document.getElementById('count').textContent = filtered.length;
+      const tbody = document.getElementById('studentsTable');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);">No students found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(u => `
+        <tr>
+          <td class="td-name">${u.name}</td>
+          <td class="td-mono">${u.registerNumber || '—'}</td>
+          <td><span class="badge badge-training">${u.department || '—'}</span></td>
+          <td class="td-mono">${u.year || '—'}</td>
+          <td style="font-size:12px;">${u.email}</td>
+          <td class="td-mono">${u.phone || '—'}</td>
+          <td style="font-size:12px;">${u.college || '—'}</td>
+        </tr>`).join('');
+    }
+  </script>
+</body>
+</html>

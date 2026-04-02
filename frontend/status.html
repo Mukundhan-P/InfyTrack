@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track Status – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .stage-tracker { display: flex; align-items: center; margin: 16px 0; }
+    .stage-step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; position: relative; }
+    .stage-step:not(:last-child)::after { content:''; position:absolute; top:18px; left:50%; width:100%; height:2px; background:var(--border); z-index:0; }
+    .stage-step.done:not(:last-child)::after { background: var(--success); }
+    .stage-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 1; border: 2px solid var(--border); background: var(--surface); }
+    .stage-step.done .stage-dot { background: var(--success); border-color: var(--success); color: #fff; }
+    .stage-step.current .stage-dot { background: var(--warning); border-color: var(--warning); color: #fff; }
+    .stage-label { font-size: 10px; font-family: var(--font-mono); color: var(--text3); text-align: center; }
+    .stage-step.done .stage-label { color: var(--success); }
+    .stage-step.current .stage-label { color: var(--warning); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div></a>
+    <div class="nav-links"><span id="navUser" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="login.html" onclick="doLogout()" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Student Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim"><div class="breadcrumb">Student / <span>Track Status</span></div><h1>Track Status</h1><p>Monitor your document verification and participation progress.</p></div>
+      <div id="statusList" class="anim anim-1"><p class="text-muted">Loading...</p></div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const user = requireStudent();
+    if (user) {
+      document.getElementById('navUser').textContent = user.name;
+      document.getElementById('sidebarLinks').innerHTML = buildStudentNav('status.html');
+      loadStatus();
+    }
+
+    async function loadStatus() {
+      try {
+        const [parts, docs] = await Promise.all([
+          apiCall('GET', '/student/participation'),
+          apiCall('GET', '/upload/my'),
+        ]);
+        renderStatus(parts, docs);
+      } catch (err) {
+        document.getElementById('statusList').innerHTML = `<div class="card"><p class="text-muted">${err.message}</p></div>`;
+      }
+    }
+
+    function stageHTML(currentStage) {
+      const stages = [{ icon: '📝', label: 'Submitted' }, { icon: '🔍', label: 'Under Review' }, { icon: '✅', label: 'Verified' }, { icon: '🏅', label: 'Completed' }];
+      return `<div class="stage-tracker">${stages.map((s, i) => {
+        const cls = i < currentStage ? 'done' : i === currentStage - 1 ? 'current' : '';
+        return `<div class="stage-step ${cls}"><div class="stage-dot">${i < currentStage ? '✓' : s.icon}</div><div class="stage-label">${s.label}</div></div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderStatus(parts, docs) {
+      const el = document.getElementById('statusList');
+
+      // Show document statuses
+      let html = '';
+      if (docs.length) {
+        html += `<h3 style="margin-bottom:12px;font-family:var(--font-head);">📎 Document Submissions</h3>`;
+        html += docs.map(d => {
+          const stage = d.status === 'Verified' ? 3 : d.status === 'Under Review' ? 2 : 1;
+          return `<div class="card mb-4">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+              <div>
+                <div style="font-family:var(--font-head);font-size:17px;font-weight:700;">${d.programName}</div>
+                <div style="display:flex;gap:8px;margin-top:6px;">${badgeHTML(d.status)}</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="text-mono">${d.docType}</div>
+                <div class="text-mono">${formatDate(d.submittedAt)}</div>
+                <a href="${d.driveLink}" target="_blank" style="font-size:12px;color:var(--primary);">🔗 View Doc</a>
+              </div>
+            </div>
+            ${stageHTML(stage)}
+            ${d.adminRemark ? `<div style="margin-top:10px;padding:10px;background:#fff3cd;border-radius:8px;font-size:13px;">⚠️ Admin Remark: <strong>${d.adminRemark}</strong></div>` : ''}
+            ${d.status === 'Need Re-upload' || d.status === 'Rejected' ? `<div class="mt-4"><a href="upload.html" class="btn btn-warning btn-sm">🔄 Re-submit Document</a></div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      if (parts.length) {
+        html += `<h3 style="margin:20px 0 12px;font-family:var(--font-head);">📝 Participation Submissions</h3>`;
+        html += parts.map(p => `
+          <div class="card mb-4">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-family:var(--font-head);font-size:17px;font-weight:700;">${p.programName}</div>
+                <div style="display:flex;gap:8px;margin-top:6px;">${typeBadge(p.programType)} ${badgeHTML(p.status)}</div>
+              </div>
+              <div style="text-align:right;"><div class="text-mono">Enrolled: ${formatDate(p.enrollDate)}</div></div>
+            </div>
+          </div>`).join('');
+      }
+
+      if (!docs.length && !parts.length) {
+        html = `<div class="card"><p style="text-align:center;padding:32px;" class="text-muted">No submissions yet. <a href="participation.html">Submit participation →</a></p></div>`;
+      }
+
+      el.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

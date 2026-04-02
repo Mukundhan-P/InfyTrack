@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify Documents – Admin – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div></a>
+    <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim"><div class="breadcrumb">Admin / <span>Verify Documents</span></div><h1>Verify Documents</h1><p>Review submitted drive links and update verification status.</p></div>
+      <div id="alertBox"></div>
+
+      <div class="card anim anim-1 mb-4" style="padding:16px 20px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <select id="fStatus" class="form-control" style="width:180px;" onchange="loadDocs()">
+            <option value="">All Status</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Verified">Verified</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Need Re-upload">Need Re-upload</option>
+          </select>
+          <span class="text-mono" id="docCount"></span>
+        </div>
+      </div>
+
+      <div id="docCards" class="anim anim-2"><p class="text-muted">Loading...</p></div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const admin = requireAdmin();
+    if (admin) {
+      document.getElementById('navAdmin').textContent = admin.name;
+      document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-verify.html');
+      loadDocs();
+    }
+
+    async function loadDocs() {
+      const status = document.getElementById('fStatus').value;
+      const query = status ? `?status=${encodeURIComponent(status)}` : '';
+      try {
+        const docs = await apiCall('GET', `/upload/all${query}`);
+        document.getElementById('docCount').textContent = `${docs.length} document(s)`;
+        renderDocs(docs);
+      } catch (err) {
+        document.getElementById('docCards').innerHTML = `<div class="card"><p class="text-muted">${err.message}</p></div>`;
+      }
+    }
+
+    function renderDocs(docs) {
+      const el = document.getElementById('docCards');
+      if (!docs.length) {
+        el.innerHTML = '<div class="card"><p style="text-align:center;padding:32px;" class="text-muted">No documents found.</p></div>';
+        return;
+      }
+      el.innerHTML = docs.map(d => `
+        <div class="card mb-4" id="doc_${d.id}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+            <div>
+              <div style="font-family:var(--font-head);font-size:16px;font-weight:700;">${d.studentName}</div>
+              <div class="text-mono" style="margin-top:2px;">${d.department} · ${d.registerNumber}</div>
+              <div style="margin-top:6px;font-size:13px;"><strong>Program:</strong> ${d.programName}</div>
+              <div style="font-size:13px;"><strong>Type:</strong> ${d.docType}</div>
+              ${d.description ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;">${d.description}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              ${badgeHTML(d.status)}
+              <div class="text-mono" style="margin-top:6px;">${formatDate(d.submittedAt)}</div>
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <a href="${d.driveLink}" target="_blank" class="btn btn-outline btn-sm">🔗 View Document</a>
+          </div>
+          ${d.adminRemark ? `<div style="padding:8px 12px;background:#fff3cd;border-radius:8px;font-size:12px;margin-bottom:12px;">Previous remark: ${d.adminRemark}</div>` : ''}
+          <div class="form-group">
+            <label class="form-label">Admin Remark</label>
+            <textarea id="remark_${d.id}" class="form-control" rows="2" placeholder="e.g. Certificate not visible / Name mismatch">${d.adminRemark || ''}</textarea>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-success btn-sm" onclick="setStatus('${d.id}','verify')">✅ Verify</button>
+            <button class="btn btn-danger btn-sm" onclick="setStatus('${d.id}','reject')">❌ Reject</button>
+            <button class="btn btn-warning btn-sm" onclick="setStatus('${d.id}','reupload')">🔄 Request Re-upload</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function setStatus(id, action) {
+      const remark = document.getElementById(`remark_${id}`)?.value || '';
+      if (action === 'reject' && !remark) return showAlert('alertBox', 'Please provide a rejection reason.', 'error');
+      try {
+        await apiCall('PUT', `/verification/${id}/${action}`, { remark });
+        showAlert('alertBox', 'Status updated successfully.', 'success');
+        loadDocs();
+      } catch (err) {
+        showAlert('alertBox', err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
