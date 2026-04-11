@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(require('path').join(__dirname, '../frontend')));
 
 // Public stats — no auth, same data as admin dashboard
 app.get('/api/public/stats', async (req, res) => {

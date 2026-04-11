@@ -106,6 +106,46 @@ exports.loginAdmin = async (req, res) => {
   }
 };
 
+// ── SEND PASSWORD RESET EMAIL ───────────────────────
+exports.sendPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required.' });
+
+    const continueUrl = 'http://localhost:5000/reset-password.html';
+    const link = await auth.generatePasswordResetLink(email, { url: continueUrl });
+
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS },
+    });
+
+    await transporter.sendMail({
+      from: `"CompanyConnect" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: 'Verify Password Change – CompanyConnect',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px;border:1px solid #e5e7eb;border-radius:12px;">
+          <h2 style="color:#7c3aed;margin-bottom:8px;">Password Change Request</h2>
+          <p style="color:#374151;margin-bottom:16px;">We received a request to change the password for your <strong>CompanyConnect</strong> account.</p>
+          <p style="color:#374151;margin-bottom:24px;">Click the button below to verify it's you. After verification, you'll be redirected to set your new password.</p>
+          <a href="${link}" style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:99px;text-decoration:none;font-weight:600;">Verify & Change Password</a>
+          <p style="color:#9ca3af;font-size:12px;margin-top:24px;">If you didn't request this, you can safely ignore this email. Your password won't change.</p>
+        </div>
+      `,
+    });
+
+    res.status(200).json({ message: 'Verification email sent.' });
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+    console.error('sendPasswordReset error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ── GET CURRENT USER PROFILE ──────────────────────────
 exports.getMe = async (req, res) => {
   try {

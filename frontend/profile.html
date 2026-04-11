@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Profile – CompanyConnect</title>
+  <title>Settings – CompanyConnect</title>
   <link rel="stylesheet" href="shared.css"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="shared.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -13,17 +16,19 @@
   <div class="app-layout">
     <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Student Menu</div><div id="sidebarLinks"></div></div></aside>
     <main class="main-content">
-      <div class="page-header anim"><div class="breadcrumb">Student / <span>My Profile</span></div><h1>My Profile</h1><p>Keep your academic and personal details up to date.</p></div>
+      <div class="page-header anim"><div class="breadcrumb">Student / <span>Settings</span></div><h1>Settings</h1><p>Manage your profile and account security.</p></div>
       <div id="alertBox"></div>
       <div class="grid-sidebar anim anim-1">
+
+        <!-- Left: Profile Details -->
         <div class="card">
           <div class="card-header"><div class="card-title">Personal & Academic Details</div><div class="card-tag">EDITABLE</div></div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Full Name</label><input id="pName" class="form-control" style="text-transform:uppercase;"/></div>
-            <div class="form-group"><label class="form-label">Register Number</label><input id="pReg" class="form-control" disabled/></div>
+            <div class="form-group"><label class="form-label">Full Name</label><input id="pName" class="form-control" disabled style="opacity:0.6;cursor:not-allowed;"/></div>
+            <div class="form-group"><label class="form-label">Register Number</label><input id="pReg" class="form-control" disabled style="opacity:0.6;cursor:not-allowed;"/></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Email</label><input id="pEmail" class="form-control" disabled/></div>
+            <div class="form-group"><label class="form-label">Email</label><input id="pEmail" class="form-control" disabled style="opacity:0.6;cursor:not-allowed;"/></div>
             <div class="form-group"><label class="form-label">Phone</label><input id="pPhone" class="form-control"/></div>
           </div>
           <div class="form-row">
@@ -69,14 +74,32 @@
           <div class="form-group"><label class="form-label">Bus Boarding Point</label><input id="pBus" class="form-control" placeholder="Thiruporur / NA"/></div>
           <div class="mt-4"><button class="btn btn-primary btn-lg" id="saveBtn" onclick="saveProfile()">💾 Save Profile</button></div>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Profile Summary</div></div>
-          <div id="summaryBox"></div>
+
+        <!-- Right: Summary + Change Password -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Profile Summary</div></div>
+            <div id="summaryBox"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Change Password</div><div class="card-tag">SECURITY</div></div>
+            <div id="pwAlertBox"></div>
+
+            <!-- Step 1: Request reset email -->
+            <div id="step1">
+              <p style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6;">
+                To change your password, we'll send a verification email to your registered address. Click the link in the email to verify it's you — you'll then be redirected to set your new password.
+              </p>
+              <button class="btn btn-primary" id="sendEmailBtn" onclick="sendResetEmail()">📧 Send Verification Email</button>
+            </div>
+          </div>
         </div>
+
       </div>
     </main>
   </div>
-  <script src="shared.js"></script>
+
   <script>
     const user = requireStudent();
     if (user) {
@@ -99,7 +122,6 @@
       btn.disabled = true; btn.textContent = 'Saving...';
       try {
         const updates = {
-          name: document.getElementById('pName').value.trim().toUpperCase(),
           phone: document.getElementById('pPhone').value.trim(),
           department: document.getElementById('pDept').value,
           year: document.getElementById('pYear').value,
@@ -126,6 +148,26 @@
       } finally {
         btn.disabled = false; btn.textContent = '💾 Save Profile';
       }
+    }
+
+    async function sendResetEmail() {
+      const btn = document.getElementById('sendEmailBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const email = user.email;
+        await apiCall('POST', '/auth/send-password-reset', { email });
+        showAlert('pwAlertBox', '📧 Verification email sent to ' + email + '. Check your inbox and click the link to verify.', 'success');
+        btn.textContent = '✅ Email Sent';
+      } catch (e) {
+        showAlert('pwAlertBox', e.message, 'error');
+        btn.disabled = false; btn.textContent = '📧 Send Verification Email';
+      }
+    }
+
+    function resetSteps() {
+      document.getElementById('step1').style.display = 'block';
+      document.getElementById('sendEmailBtn').disabled = false;
+      document.getElementById('sendEmailBtn').textContent = '📧 Send Verification Email';
     }
 
     function renderSummary(u) {

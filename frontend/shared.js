@@ -81,7 +81,7 @@ function showAlert(containerId, msg, type = 'success') {
 function buildStudentNav(active) {
   return [
     { href: 'dashboard.html', icon: '📊', label: 'Dashboard' },
-    { href: 'profile.html', icon: '👤', label: 'My Profile' },
+    { href: 'profile.html', icon: '⚙️', label: 'Settings' },
     { href: 'programs.html', icon: '📚', label: 'Programs' },
     { href: 'participation.html', icon: '📝', label: 'Submit Participation' },
     { href: 'upload.html', icon: '📎', label: 'Upload Documents' },
