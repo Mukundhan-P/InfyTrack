@@ -1,24 +1,38 @@
-const { db } = require('../firebase');
+const { db, bucket } = require('../firebase');
+const multer = require('multer');
+const path = require('path');
 
-// ── STUDENT SUBMITS DRIVE LINK ────────────────────────
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') cb(null, true);
+    else cb(new Error('Only PDF files are allowed.'));
+  },
+});
+
+exports.uploadMiddleware = upload.single('pdf');
+
+// ── STUDENT UPLOADS PDF ───────────────────────────────
 exports.submitDocument = async (req, res) => {
   try {
-    const { programId, programName, docType, driveLink, description } = req.body;
+    const { programName, docType, description } = req.body;
     const { uid, email } = req.user;
 
-    if (!driveLink || !programName || !docType) {
-      return res.status(400).json({ message: 'Drive link, program name, and document type are required.' });
-    }
+    if (!req.file) return res.status(400).json({ message: 'PDF file is required.' });
+    if (!programName || !docType) return res.status(400).json({ message: 'Program name and document type are required.' });
 
-    // Validate it looks like a drive/docs link
-    if (!driveLink.startsWith('http')) {
-      return res.status(400).json({ message: 'Please provide a valid URL.' });
-    }
-
-    // Get student info
     const studentDoc = await db.collection('students').doc(uid).get();
     if (!studentDoc.exists) return res.status(404).json({ message: 'Student not found.' });
     const student = studentDoc.data();
+
+    // Upload PDF to Firebase Storage
+    const fileName = `documents/${uid}/${Date.now()}_${req.file.originalname.replace(/\s+/g, '_')}`;
+    const file = bucket.file(fileName);
+    await file.save(req.file.buffer, { metadata: { contentType: 'application/pdf' } });
+    await file.makePublic();
+    const fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
     const docRef = await db.collection('documents').add({
       studentUid: uid,
@@ -26,10 +40,10 @@ exports.submitDocument = async (req, res) => {
       studentName: student.name,
       department: student.department,
       registerNumber: student.registerNumber,
-      programId: programId || '',
       programName,
       docType,
-      driveLink,
+      fileUrl,
+      fileName: req.file.originalname,
       description: description || '',
       status: 'Under Review',
       adminRemark: '',
@@ -37,7 +51,7 @@ exports.submitDocument = async (req, res) => {
       reviewedAt: null,
     });
 
-    res.status(201).json({ message: 'Document submitted successfully.', id: docRef.id });
+    res.status(201).json({ message: 'Document uploaded successfully.', id: docRef.id });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

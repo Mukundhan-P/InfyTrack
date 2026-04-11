@@ -14,6 +14,9 @@
     .pc-meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
     .pc-meta-item { font-size: 11px; font-family: var(--font-mono); color: var(--text3); }
     .pc-meta-item strong { color: var(--text2); }
+    .filter-btn { padding: 8px 20px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
   </style>
 </head>
 <body>
@@ -25,7 +28,17 @@
     <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Student Menu</div><div id="sidebarLinks"></div></div></aside>
     <main class="main-content">
       <div class="page-header anim"><div class="breadcrumb">Student / <span>Programs</span></div><h1>Available Programs</h1><p>Browse and enroll in Infosys Springboard programs.</p></div>
-      <div class="prog-cards anim anim-1" id="progCards"><p class="text-muted">Loading...</p></div>
+
+      <!-- Filters -->
+      <div class="anim anim-1" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+        <button class="filter-btn active" onclick="filterPrograms('All')">All</button>
+        <button class="filter-btn" onclick="filterPrograms('Certification')">Certification</button>
+        <button class="filter-btn" onclick="filterPrograms('Training')">Training</button>
+        <button class="filter-btn" onclick="filterPrograms('Workshop')">Workshop</button>
+        <button class="filter-btn" onclick="filterPrograms('Internship')">Internship</button>
+      </div>
+
+      <div class="prog-cards anim anim-2" id="progCards"><p class="text-muted">Loading...</p></div>
     </main>
   </div>
   <script src="shared.js"></script>
@@ -37,37 +50,49 @@
       loadPrograms();
     }
 
+    let allPrograms = [];
+
     async function loadPrograms() {
       try {
-        const programs = await apiCall('GET', '/programs');
-        const el = document.getElementById('progCards');
-        if (!programs.length) { el.innerHTML = '<p class="text-muted">No programs available yet.</p>'; return; }
-        const typeColors = { Training: '#ede9fe|#5b21b6', Internship: '#dbeafe|#1d4ed8', Certification: '#d1fae5|#047857', Workshop: '#fef3c7|#92400e' };
-        el.innerHTML = programs.map(p => {
-          const [bg, color] = (typeColors[p.type] || '#f1f5f9|#475569').split('|');
-          return `<div class="pc anim anim-1">
-            <div class="pc-top">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span class="badge" style="background:${bg};color:${color};">${p.type}</span>
-                <span class="text-mono">${p.duration || '—'}</span>
-              </div>
-              <div class="pc-name">${p.name}</div>
-              <div class="pc-desc">${p.desc || ''}</div>
-              <div class="pc-meta">
-                <div class="pc-meta-item"><strong>Start:</strong> ${formatDate(p.start)}</div>
-                <div class="pc-meta-item"><strong>End:</strong> ${formatDate(p.end)}</div>
-                <div class="pc-meta-item"><strong>Eligibility:</strong> ${p.eligibility || 'All Students'}</div>
-              </div>
-            </div>
-            <div class="pc-bottom">
-              <a href="participation.html?prog=${p.id}" class="btn btn-primary">Enroll Now</a>
-              <a href="upload.html" class="btn btn-outline">Upload Proof</a>
-            </div>
-          </div>`;
-        }).join('');
+        allPrograms = await apiCall('GET', '/programs');
+        renderPrograms(allPrograms);
       } catch (e) {
         document.getElementById('progCards').innerHTML = `<p class="text-muted">${e.message}</p>`;
       }
+    }
+
+    function filterPrograms(type) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.textContent === type));
+      const filtered = type === 'All' ? allPrograms : allPrograms.filter(p => p.type === type);
+      renderPrograms(filtered);
+    }
+
+    function renderPrograms(programs) {
+      const el = document.getElementById('progCards');
+      if (!programs.length) { el.innerHTML = '<p class="text-muted">No programs found.</p>'; return; }
+      const typeColors = { Training: '#ede9fe|#5b21b6', Internship: '#dbeafe|#1d4ed8', Certification: '#d1fae5|#047857', Workshop: '#fef3c7|#92400e' };
+      el.innerHTML = programs.map(p => {
+        const [bg, color] = (typeColors[p.type] || '#f1f5f9|#475569').split('|');
+        return `<div class="pc">
+          <div class="pc-top">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="badge" style="background:${bg};color:${color};">${p.type}</span>
+              <span class="text-mono">${p.duration || '—'}</span>
+            </div>
+            <div class="pc-name">${p.name}</div>
+            <div class="pc-desc">${p.desc || ''}</div>
+            <div class="pc-meta">
+              <div class="pc-meta-item"><strong>Start:</strong> ${formatDate(p.start)}</div>
+              <div class="pc-meta-item"><strong>End:</strong> ${formatDate(p.end)}</div>
+              <div class="pc-meta-item"><strong>Eligibility:</strong> ${p.eligibility || 'All Students'}</div>
+            </div>
+          </div>
+          <div class="pc-bottom">
+            <a href="participation.html?prog=${p.id}" class="btn btn-primary">Enroll Now</a>
+            <a href="upload.html" class="btn btn-outline">Upload Proof</a>
+          </div>
+        </div>`;
+      }).join('');
     }
   </script>
 </body>
