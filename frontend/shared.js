@@ -1,13 +1,12 @@
 const API = 'http://localhost:5000/api';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBNxLSTxcwQbTohuI-dfI3wO_zOFJtof34",
-  authDomain: "student-tracker-infosys.firebaseapp.com",
-  projectId: "student-tracker-infosys",
-  storageBucket: "student-tracker-infosys.firebasestorage.app",
-  messagingSenderId: "660446692211",
-  appId: "1:660446692211:web:bf0e2c748fa7e7579bfb06",
-  measurementId: "G-93342Z6FSZ"
+  apiKey: "AIzaSyCArOuHQ0ElfKfsPALTNB6cNAwieELnMfY",
+  authDomain: "infosys-tracker.firebaseapp.com",
+  projectId: "infosys-tracker",
+  storageBucket: "infosys-tracker.firebasestorage.app",
+  messagingSenderId: "183851848253",
+  appId: "1:183851848253:web:a65e23b8754693fc689054"
 };
 
 if (typeof firebase !== 'undefined' && !firebase.apps?.length) {

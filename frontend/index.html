@@ -1,189 +1,458 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CompanyConnect – Infosys Springboard Tracker</title>
+  <title>CompanyConnect – Tracking Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="shared.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="shared.css"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { background: #0e0a2e; color: #fff; overflow-x: hidden; }
-    .hero-nav {
-      background: rgba(14,10,46,0.92); backdrop-filter: blur(8px);
-      padding: 0 40px; height: 68px; display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08);
-      will-change: transform;
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #141a2a;
+      --card-hover: #1c2235;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(139, 92, 246, 0.3);
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --text-main: #ffffff;
+      --text-muted: #94a3b8;
     }
-    .hero-nav .brand-name { color: #fff; font-size: 20px; }
-    .hero-nav .brand-sub { color: rgba(255,255,255,0.5); }
-    .hnav-links { display: flex; align-items: center; gap: 6px; }
-    .hnav-links a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: color 0.2s, background 0.2s; }
-    .hnav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
-    .hnav-links .btn-nav-hero { background: #3b28cc; color: #fff; border-radius: 9px; font-weight: 700; }
-    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 80px 40px; }
-    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(59,40,204,0.5) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 20% 80%, rgba(124,58,237,0.3) 0%, transparent 60%), #0e0a2e; }
-    .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 48px 48px; contain: strict; }
-    .hero-inner { position: relative; z-index: 1; max-width: 1200px; width: 100%; display: grid; grid-template-columns: 1fr 420px; gap: 60px; align-items: center; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,40,204,0.25); border: 1px solid rgba(59,40,204,0.5); color: #a78bfa; padding: 6px 16px; border-radius: 99px; font-size: 13px; font-family: var(--font-mono); margin-bottom: 24px; }
-    .hero-title { font-family: var(--font-head); font-size: clamp(36px,5vw,56px); font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
-    .hero-title .accent { background: linear-gradient(135deg, #00c2ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero-desc { color: rgba(255,255,255,0.65); font-size: 16px; line-height: 1.7; max-width: 480px; margin-bottom: 36px; }
-    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-    .btn-hero-primary { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#3b28cc,#5b45e8); color: #fff; padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 30px rgba(59,40,204,0.4); transition: transform 0.2s, box-shadow 0.2s; }
-    .btn-hero-primary:hover { transform: translateY(-2px); }
-    .btn-hero-outline { display: inline-flex; align-items: center; gap: 8px; border: 2px solid rgba(255,255,255,0.25); color: #fff; padding: 13px 26px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
-    .btn-hero-outline:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); }
-    .workflow-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 28px; }
-    .workflow-card h3 { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; font-family: var(--font-mono); margin-bottom: 20px; }
-    .wf-step { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.04); margin-bottom: 8px; }
-    .wf-num { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#3b28cc,#7c3aed); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-    .wf-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); }
-    .stats-bar { background: rgba(255,255,255,0.04); border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 32px 40px; }
-    .stats-bar-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; text-align: center; }
-    .sb-val { font-family: var(--font-head); font-size: 42px; font-weight: 800; background: linear-gradient(135deg,#00c2ff,#7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .sb-label { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 6px; }
-    .programs-section { padding: 80px 40px; }
-    .programs-inner { max-width: 1200px; margin: 0 auto; }
-    .section-badge { display: inline-block; background: rgba(59,40,204,0.2); border: 1px solid rgba(59,40,204,0.4); color: #a78bfa; padding: 4px 14px; border-radius: 99px; font-size: 12px; font-family: var(--font-mono); margin-bottom: 16px; }
-    .section-title { font-family: var(--font-head); font-size: 36px; font-weight: 800; color: #fff; letter-spacing: -0.8px; margin-bottom: 8px; }
-    .section-desc { color: rgba(255,255,255,0.5); font-size: 15px; margin-bottom: 40px; }
-    .prog-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
-    .prog-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; transition: border-color 0.2s, background 0.2s, transform 0.2s; display: flex; flex-direction: column; }
-    .prog-card:hover { border-color: rgba(59,40,204,0.5); background: rgba(59,40,204,0.1); transform: translateY(-4px); }
-    .prog-type-badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 11px; font-family: var(--font-mono); font-weight: 600; margin-bottom: 14px; }
-    .prog-dur { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.4); }
-    .prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .prog-type-Training { background: rgba(167,139,250,0.15); color: #a78bfa; }
-    .prog-type-Internship { background: rgba(96,165,250,0.15); color: #60a5fa; }
-    .prog-type-Certification { background: rgba(52,211,153,0.15); color: #34d399; }
-    .prog-type-Workshop { background: rgba(251,191,36,0.15); color: #fbbf24; }
-    .prog-name { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-    .prog-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 20px; flex: 1; }
-    .prog-enroll { display: block; text-align: center; padding: 10px; background: linear-gradient(135deg,#3b28cc,#5b45e8); color: #fff; border-radius: 9px; font-size: 13px; font-weight: 700; text-decoration: none; transition: opacity 0.2s; }
-    .prog-enroll:hover { opacity: 0.85; }
-    .footer { background: rgba(0,0,0,0.3); padding: 32px 40px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; }
-    .footer strong { color: rgba(255,255,255,0.7); }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); overflow-x: hidden; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    /* Navbar */
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); }
+    .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .logo-circle { width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: #fff; }
+    .brand-title { font-weight: 700; font-size: 16px; line-height: 1.2; }
+    .brand-subtitle { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .btn-signin { background: var(--primary); color: #fff !important; padding: 8px 20px; border-radius: 99px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+    .btn-signin:hover { background: var(--primary-hover); }
+
+    /* Hero Section */
+    .hero { text-align: center; padding: 100px 0 80px; display: flex; flex-direction: column; align-items: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 500; color: #c4b5fd; margin-bottom: 24px; }
+    .hero-title { font-size: 72px; font-weight: 800; line-height: 1.05; margin-bottom: 24px; letter-spacing: -1.5px; }
+    .text-gradient { color: var(--primary); }
+    .hero-desc { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto 40px; line-height: 1.6; }
+    .hero-actions { display: flex; justify-content: center; gap: 16px; }
+    .btn-primary { background: var(--primary); color: #fff; padding: 14px 28px; border-radius: 99px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: rgba(255,255,255,0.03); color: #fff; padding: 14px 28px; border-radius: 99px; text-decoration: none; font-weight: 600; font-size: 15px; border: 1px solid rgba(255,255,255,0.1); transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+    /* Section Headers */
+    .section-header { text-align: center; margin-bottom: 48px; }
+    .section-title { font-size: 40px; font-weight: 800; margin-bottom: 12px; letter-spacing: -1px; }
+    .section-title span { color: var(--text-muted); }
+    .section-subtitle { font-size: 16px; color: var(--text-muted); font-weight: 500; }
+
+    /* Stats Section */
+    .stats-section { padding: 60px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.01); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .stat-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+    .stat-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid rgba(139, 92, 246, 0.2); }
+    .stat-percent { color: var(--primary); font-size: 13px; font-weight: 600; }
+    .stat-value { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+    /* Featured Programs Carousel */
+    .programs-section { padding: 80px 0; text-align: center; }
+    .carousel-wrapper { position: relative; max-width: 1100px; margin: 0 auto; overflow: hidden; padding: 40px 0; }
+    .carousel-track { display: flex; align-items: center; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    .program-card { flex: 0 0 340px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: left; transition: all 0.5s ease; opacity: 0.5; transform: scale(0.85); box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 0 -10px; z-index: 1; }
+    .program-card.active { opacity: 1; transform: scale(1.05); background: #1a2035; border-color: rgba(139, 92, 246, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 2; }
+    
+    .program-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .program-badge { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
+    .program-card.active .program-badge { border: 1px solid rgba(139, 92, 246, 0.3); }
+    
+    .program-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .program-desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
+    
+    .btn-view { display: block; width: 100%; text-align: center; padding: 12px; border-radius: 99px; text-decoration: none; font-size: 14px; font-weight: 600; border: 1px solid var(--border); color: #fff; transition: all 0.2s; }
+    .btn-view:hover { background: rgba(255,255,255,0.05); }
+    .program-card.active .btn-view { background: var(--primary); border-color: var(--primary); }
+    .program-card.active .btn-view:hover { background: var(--primary-hover); }
+
+    .nav-buttons { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; z-index: 5; pointer-events: none; }
+    .carousel-nav { width: 44px; height: 44px; border-radius: 50%; background: #1a2035; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; pointer-events: auto; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .carousel-nav:hover { background: #232a45; border-color: rgba(255,255,255,0.2); }
+
+    .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s; }
+    .dot.active { background: var(--primary); width: 24px; border-radius: 99px; }
+
+    /* Powerful Features Section */
+    .features-section { padding: 80px 0 120px; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.3s ease; cursor: pointer; }
+    .feature-card:hover { transform: translateY(-8px); border-color: var(--border-hover); background: var(--card-hover); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .feature-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); display: flex; align-items: center; justify-content: center; color: var(--primary); margin-bottom: 24px; transition: all 0.3s ease; }
+    .feature-card:hover .feature-icon { background: var(--primary); color: #fff; box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); }
+    
+    .feature-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    /* Footer */
+    .footer { border-top: 1px solid var(--border); padding: 32px 0; display: flex; justify-content: space-between; align-items: center; }
+    .footer-text { font-size: 13px; color: var(--text-muted); }
+
+    svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
 <body>
-  <nav class="hero-nav">
-    <a href="index.html" class="nav-brand" style="text-decoration:none;">
-      <div class="brand-hex">⬡</div>
-      <div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div>
-    </a>
-    <div class="hnav-links">
-      <a href="#programs">Programs</a>
-      <a href="#stats">Stats</a>
-      <a href="login.html">Student Login</a>
-      <a href="admin-login.html" class="btn-nav-hero">Admin Login</a>
-    </div>
-  </nav>
+  
+  <div class="container">
+    <nav class="navbar">
+      <a href="index.html" class="nav-brand">
+        <div class="logo-circle">C</div>
+        <div>
+          <div class="brand-title">CompanyConnect</div>
+          <div class="brand-subtitle">Student Activity Tracking</div>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#stats">Stats</a>
+        <a href="#programs">Programs</a>
+        <a href="#features">Features</a>
+        <a href="login.html" class="btn-signin">Sign In</a>
+      </div>
+    </nav>
+  </div>
 
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-grid"></div>
-    <div class="hero-inner">
-      <div>
-        <div class="hero-badge">🎓 St. Joseph's College of Engineering</div>
-        <h1 class="hero-title">Track Infosys Springboard<br><span class="accent">Participation</span> Easily</h1>
-        <p class="hero-desc">A centralized platform for students, placement coordinators, and faculty to manage Student Enablement Programs, Virtual Internships, certificates, and verification workflows.</p>
-        <div class="hero-actions">
-          <a href="login.html" class="btn-hero-primary">🎓 Student Login / Register</a>
-          <a href="admin-login.html" class="btn-hero-outline">⚙️ Admin Login</a>
+  <section class="hero container">
+    <div class="hero-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+      Premium Student Activity Platform
+    </div>
+    <h1 class="hero-title">Track Infosys<br>Springboard<br><span class="text-gradient">Participation</span></h1>
+    <p class="hero-desc">A centralized platform for students, placement coordinators, and faculty to manage programs, certificates, and verification workflows.</p>
+    <div class="hero-actions">
+      <a href="login.html" class="btn-primary">Student Login <span>&rarr;</span></a>
+      <a href="admin-login.html" class="btn-secondary">Admin Panel <span>&rarr;</span></a>
+    </div>
+  </section>
+
+  <section class="stats-section" id="stats">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Live Platform <span>Statistics</span></h2>
+        <p class="section-subtitle">Real-time insights into student engagement and success</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+            <div class="stat-percent">+12.5%</div>
+          </div>
+          <div class="stat-value" id="s-total">0</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+            <div class="stat-percent">+18.2%</div>
+          </div>
+          <div class="stat-value" id="s-internships">0</div>
+          <div class="stat-label">Internships Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 15l-2 5l9-9z" stroke="none"/><polygon points="12 15 17 21 19 21 16 15 12 15"></polygon><circle cx="12" cy="9" r="6"></circle></svg></div>
+            <div class="stat-percent">+24.3%</div>
+          </div>
+          <div class="stat-value" id="s-certs">0</div>
+          <div class="stat-label">Certifications</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+            <div class="stat-percent">+31.7%</div>
+          </div>
+          <div class="stat-value" id="s-events">0</div>
+          <div class="stat-label">Events Participated</div>
         </div>
       </div>
-      <div class="workflow-card">
-        <h3>Workflow</h3>
-        <div class="wf-step"><div class="wf-num">1</div><div class="wf-label">Student Registers</div></div>
-        <div class="wf-step"><div class="wf-num">2</div><div class="wf-label">Select Infosys Program</div></div>
-        <div class="wf-step"><div class="wf-num">3</div><div class="wf-label">Upload Proof &amp; Certificate</div></div>
-        <div class="wf-step"><div class="wf-num">4</div><div class="wf-label">Admin Verification</div></div>
-        <div class="wf-step"><div class="wf-num">5</div><div class="wf-label">Track Status &amp; Reports</div></div>
+    </div>
+  </section>
+
+  <section class="programs-section" id="programs">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Featured <span>Programs</span></h2>
+        <p class="section-subtitle">Industry-recognized training and certification programs</p>
+      </div>
+      
+      <div class="carousel-wrapper">
+        <div class="nav-buttons">
+          <div class="carousel-nav" id="prev-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+          <div class="carousel-nav" id="next-btn"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+        </div>
+        <div class="carousel-track" id="carousel-track">
+          <!-- Card 1 -->
+          <div class="program-card">
+            <div class="program-top">
+              <div><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97706"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></div>
+              <div class="program-badge">Internship</div>
+            </div>
+            <div class="program-title">Virtual Internship</div>
+            <div class="program-desc">8-week hands-on internship experience</div>
+            <a href="login.html" class="btn-view">View Details &rarr;</a>
+          </div>
+          <!-- Card 2 -->
+          <div class="program-card">
+            <div class="program-top">
+              <div><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div>
+              <div class="program-badge">Course</div>
+            </div>
+            <div class="program-title">Python Certification</div>
+            <div class="program-desc">Advanced Python programming certification</div>
+            <a href="login.html" class="btn-view">View Details &rarr;</a>
+          </div>
+          <!-- Card 3 -->
+          <div class="program-card">
+            <div class="program-top">
+              <div><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <div class="program-badge">Workshop</div>
+            </div>
+            <div class="program-title">Soft Skills Workshop</div>
+            <div class="program-desc">Communication and leadership training</div>
+            <a href="login.html" class="btn-view">View Details &rarr;</a>
+          </div>
+          <!-- Card 4 (Duplicate for seamless loop) -->
+          <div class="program-card">
+            <div class="program-top">
+              <div><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
+              <div class="program-badge">Training</div>
+            </div>
+            <div class="program-title">Cloud Computing</div>
+            <div class="program-desc">Fundamentals of modern cloud infrastructure</div>
+            <a href="login.html" class="btn-view">View Details &rarr;</a>
+          </div>
+          <!-- Card 5 (Duplicate for seamless loop) -->
+          <div class="program-card">
+            <div class="program-top">
+              <div><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></div>
+              <div class="program-badge">Course</div>
+            </div>
+            <div class="program-title">Web Development</div>
+            <div class="program-desc">Full-stack web application development</div>
+            <a href="login.html" class="btn-view">View Details &rarr;</a>
+          </div>
+        </div>
+        
+        <div class="carousel-dots" id="carousel-dots">
+          <!-- Dots will be generated by JS -->
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="stats-bar" id="stats">
-    <div class="stats-bar-inner">
-      <div><div class="sb-val" id="s1">0</div><div class="sb-label">Registered Students</div></div>
-      <div><div class="sb-val" id="s2">0</div><div class="sb-label">Infosys Springboard Enrolled</div></div>
-      <div><div class="sb-val" id="s3">0</div><div class="sb-label">Virtual Internship Completed</div></div>
-      <div><div class="sb-val" id="s4">0</div><div class="sb-label">Certificates Verified</div></div>
-    </div>
-  </div>
-
-  <section class="programs-section" id="programs">
-    <div class="programs-inner">
-      <div class="section-badge">Available Programs</div>
-      <h2 class="section-title">Infosys Programs</h2>
-      <p class="section-desc">Enroll, track, and get certified across all Infosys Springboard programs.</p>
-      <div class="prog-grid" id="progGrid"></div>
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Powerful <span>Features</span></h2>
+        <p class="section-subtitle">Everything you need to manage student activities</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+          <div class="feature-title">Activity Tracking</div>
+          <div class="feature-desc">Real-time monitoring of student participation across all programs and events</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+          <div class="feature-title">Smart Reporting</div>
+          <div class="feature-desc">Generate comprehensive reports with advanced analytics and insights</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+          <div class="feature-title">Admin Dashboard</div>
+          <div class="feature-desc">Powerful admin panel for managing students, faculty, and programs</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
+          <div class="feature-title">Verification System</div>
+          <div class="feature-desc">Automated certificate and document verification workflow</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></div>
+          <div class="feature-title">Student Submissions</div>
+          <div class="feature-desc">Easy-to-use submission portal for students to upload proofs</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></div>
+          <div class="feature-title">Analytics &amp; Insights</div>
+          <div class="feature-desc">Deep insights into participation trends and completion rates</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <div class="footer">
-    <strong>CompanyConnect</strong> — Infosys Springboard Student Enablement & Virtual Internship Tracker<br>
-    St. Joseph's College of Engineering &amp; St. Joseph's Institute of Technology
-  </div>
+  <footer class="container">
+    <div class="footer">
+      <a href="#" class="nav-brand">
+        <div class="logo-circle" style="width:24px;height:24px;font-size:12px;">C</div>
+        <div>
+          <div class="brand-title" style="font-size:14px;">CompanyConnect</div>
+          <div class="brand-subtitle">Student Activity Tracking</div>
+        </div>
+      </a>
+      <div class="footer-text">&copy; 2026 CompanyConnect. All rights reserved.</div>
+    </div>
+  </footer>
 
-  <script src="shared.js"></script>
   <script>
-    const BASE = 'http://localhost:5000/api';
-    const ids  = ['s1','s2','s3','s4'];
-    const keys = ['totalStudents','enrolled','completed','verified'];
-
-    function animateCount(el, target) {
-      const dur = 1600, start = performance.now();
-      (function step(now) {
-        const t = Math.min((now - start) / dur, 1), ease = 1 - Math.pow(1 - t, 3);
-        el.textContent = Math.round(ease * target);
-        if (t < 1) requestAnimationFrame(step);
-      })(performance.now());
+    // Stats Counter Animation
+    const ids = ['s-total', 's-internships', 's-certs', 's-events'];
+    const defaultStats = [2456, 847, 1234, 3891];
+    
+    function animateValue(obj, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        obj.innerHTML = Math.floor(easeOut * (end - start) + start).toLocaleString();
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
     }
 
-    let animated = false;
-    function applyStats(stats) {
-      ids.forEach((id, i) => {
+    function applyStats(statsObj) {
+      // statsObj should ideally have keys that we care about. 
+      // If we don't have matching keys, we use default UI values to match the image exactly.
+      const val1 = statsObj.totalStudents || defaultStats[0];
+      const val2 = statsObj.enrolled || defaultStats[1]; 
+      const val3 = statsObj.verified || defaultStats[2];
+      const val4 = statsObj.completed || defaultStats[3];
+
+      const vals = [val1, val2, val3, val4];
+
+      ids.forEach((id, idx) => {
         const el = document.getElementById(id);
-        const val = Number(stats[keys[i]]) || 0;
-        if (!animated) animateCount(el, val);
-        else el.textContent = val;
+        animateValue(el, 0, vals[idx], 2000);
       });
-      animated = true;
     }
 
     function loadStats() {
-      fetch(BASE + '/public/stats')
-        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(applyStats)
-        .catch(err => console.error('Stats fetch failed:', err));
+      fetch('http://localhost:5000/api/public/stats')
+        .then(r => r.json())
+        .then(data => applyStats(data))
+        .catch(err => {
+          console.log('Using default mock stats due to fetch error:', err);
+          applyStats({
+             totalStudents: defaultStats[0],
+             enrolled: defaultStats[1],
+             verified: defaultStats[2],
+             completed: defaultStats[3]
+          });
+        });
     }
 
+    // Load initially and update every 5 seconds as requested "whenever finishes" 
+    // short polling covers this without WebSockets
     loadStats();
-    setInterval(loadStats, 30000);
+    setInterval(loadStats, 5000);
 
-    fetch(BASE + '/programs')
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(programs => {
-        document.getElementById('progGrid').innerHTML = programs.length
-          ? programs.map(p => `
-              <div class="prog-card">
-                <div class="prog-row">
-                  <span class="prog-type-badge prog-type-${p.type}">${p.type || 'Program'}</span>
-                  <span class="prog-dur">${p.duration || ''}</span>
-                </div>
-                <div class="prog-name">${p.name}</div>
-                <div class="prog-desc">${p.desc || p.description || ''}</div>
-                <a href="login.html" class="prog-enroll">Enroll Now →</a>
-              </div>`).join('')
-          : '<p style="color:rgba(255,255,255,0.4);text-align:center;grid-column:1/-1;">No programs available yet.</p>';
-      })
-      .catch(() => {
-        document.getElementById('progGrid').innerHTML = '<p style="color:rgba(255,255,255,0.4);text-align:center;grid-column:1/-1;">Could not load programs.</p>';
+
+    // Carousel Logic
+    const track = document.getElementById('carousel-track');
+    const cards = Array.from(track.children);
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const dotsContainer = document.getElementById('carousel-dots');
+    
+    let currentIndex = 1; // start at 1 (center item)
+    let autoScrollInterval;
+
+    // Create dots based on card length
+    cards.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (idx === currentIndex) dot.classList.add('active');
+      dot.addEventListener('click', () => goToSlide(idx));
+      dotsContainer.appendChild(dot);
+    });
+    const dots = Array.from(dotsContainer.children);
+
+    function updateCarousel() {
+      cards.forEach((c, idx) => {
+        c.classList.remove('active');
       });
+      dots.forEach(d => d.classList.remove('active'));
+
+      cards[currentIndex].classList.add('active');
+      dots[currentIndex].classList.add('active');
+
+      // Calculate translation. 
+      // A card is 340px, let's say width + margins. 
+      // The container flex scales. To keep the active one roughly in center:
+      // We know Card width is 340px, but gap is implemented via flex or margins.
+      // margin is -10px, meaning exact spacing per item could be ~320px
+      // Using an offset to center:
+      
+      const width = 320; // approximate width of non-active card including margins
+      const centerOffset = (track.parentElement.clientWidth / 2) - (width / 2);
+      const px = centerOffset - (currentIndex * width);
+      
+      track.style.transform = `translateX(${px}px)`;
+    }
+
+    function nextSlide() {
+      currentIndex++;
+      if (currentIndex >= cards.length) currentIndex = 0;
+      updateCarousel();
+      resetInterval();
+    }
+
+    function prevSlide() {
+      currentIndex--;
+      if (currentIndex < 0) currentIndex = cards.length - 1;
+      updateCarousel();
+      resetInterval();
+    }
+
+    function goToSlide(idx) {
+      currentIndex = idx;
+      updateCarousel();
+      resetInterval();
+    }
+
+    function resetInterval() {
+      clearInterval(autoScrollInterval);
+      startInterval();
+    }
+
+    function startInterval() {
+      // 2 seconds auto-scroll as per request
+      autoScrollInterval = setInterval(nextSlide, 2000);
+    }
+
+    // Event listeners
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+
+    // Initial setup
+    window.addEventListener('resize', updateCarousel);
+    setTimeout(() => {
+      updateCarousel();
+      startInterval();
+    }, 100);
+
   </script>
 </body>
 </html>

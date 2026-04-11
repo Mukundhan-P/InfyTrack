@@ -51,6 +51,7 @@ exports.registerStudent = async (req, res) => {
     if (error.code === 'auth/email-already-exists') {
       return res.status(400).json({ message: 'Email already registered.' });
     }
+    console.error('registerStudent error:', error);
     res.status(500).json({ message: 'Registration failed.', error: error.message });
   }
 };
