@@ -81,11 +81,11 @@ function showAlert(containerId, msg, type = 'success') {
 function buildStudentNav(active) {
   return [
     { href: 'dashboard.html', icon: '📊', label: 'Dashboard' },
-    { href: 'profile.html', icon: '⚙️', label: 'Settings' },
     { href: 'programs.html', icon: '📚', label: 'Programs' },
     { href: 'participation.html', icon: '📝', label: 'Submit Participation' },
     { href: 'upload.html', icon: '📎', label: 'Upload Documents' },
     { href: 'status.html', icon: '🔍', label: 'Track Status' },
+    { href: 'profile.html', icon: '⚙️', label: 'Settings' },
   ].map(n => `<a href="${n.href}" class="${active === n.href ? 'active' : ''}"><span class="icon">${n.icon}</span>${n.label}</a>`).join('');
 }
 

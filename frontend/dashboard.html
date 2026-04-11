@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard – CompanyConnect</title>
   <link rel="stylesheet" href="shared.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <nav class="navbar">
@@ -19,7 +20,23 @@
         <p>Track your Infosys Springboard participation and program status here.</p>
       </div>
       <div class="stats-row anim anim-1" id="statsRow"></div>
-      <div class="grid-sidebar anim anim-2">
+
+      <!-- Live Graph Section -->
+      <div class="anim anim-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Progress by Type</div>
+            <span id="liveIndicator" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#22c55e;font-weight:600;"><span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>LIVE</span>
+          </div>
+          <canvas id="barChart" height="100"></canvas>
+        </div>
+      </div>
+
+      <style>
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+      </style>
+
+      <div class="grid-sidebar anim anim-3">
         <div class="card">
           <div class="card-header">
             <div class="card-title">My Submissions</div>
@@ -69,6 +86,8 @@
       loadDashboardData();
     }
 
+    let barChartInstance = null;
+
     async function loadDashboardData() {
       try {
         const [parts, docs] = await Promise.all([
@@ -85,6 +104,33 @@
           <div class="stat-card"><div class="stat-icon">📎</div><div class="stat-label">Docs Submitted</div><div class="stat-value">${docs.length}</div></div>
           <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-label">Docs Verified</div><div class="stat-value">${verified}</div></div>`;
 
+        // Chart data
+        const types = ['Training', 'Internship', 'Certification', 'Workshop'];
+        const completedByType = types.map(t => parts.filter(p => p.programType === t && p.status === 'Completed').length);
+        const doingByType    = types.map(t => parts.filter(p => p.programType === t && p.status !== 'Completed').length);
+
+        // Bar chart
+        if (barChartInstance) barChartInstance.destroy();
+        barChartInstance = new Chart(document.getElementById('barChart'), {
+          type: 'bar',
+          data: {
+            labels: types,
+            datasets: [
+              { label: 'Completed', data: completedByType, backgroundColor: '#10b981', borderRadius: 6 },
+              { label: 'In Progress', data: doingByType, backgroundColor: '#8b5cf6', borderRadius: 6 },
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#94a3b8', font: { size: 12 } } } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+            }
+          }
+        });
+
+        // Submissions table
         const tbody = document.getElementById('subBody');
         if (!parts.length) {
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:32px;">No submissions yet. <a href="participation.html">Submit now →</a></td></tr>';
@@ -101,6 +147,9 @@
         document.getElementById('statsRow').innerHTML = `<p class="text-muted">${err.message}</p>`;
       }
     }
+
+    // Live refresh every 10 seconds
+    setInterval(loadDashboardData, 10000);
   </script>
 </body>
 </html>
