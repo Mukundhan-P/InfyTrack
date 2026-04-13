@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Department Summary – Admin – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .filter-btn { padding: 8px 20px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div></a>
+    <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim">
+        <div class="breadcrumb">Admin / <span>Department Summary</span></div>
+        <h1>Department Summary</h1>
+        <p>Program completion overview by department for students and faculty.</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="card anim anim-1" style="padding:16px 20px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:11px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Role</div>
+            <div style="display:flex;gap:4px;">
+              <button class="filter-btn active" id="roleAll"      onclick="setFilter('role','all')">👥 All</button>
+              <button class="filter-btn"        id="roleStudents" onclick="setFilter('role','students')">👤 Students</button>
+              <button class="filter-btn"        id="roleFaculty"  onclick="setFilter('role','faculty')">🎓 Faculty</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">College</div>
+            <div style="display:flex;gap:4px;">
+              <button class="filter-btn active" id="collegeAll"         onclick="setFilter('college','all')">🏫 All</button>
+              <button class="filter-btn"        id="collegeEngineering" onclick="setFilter('college','engineering')">⚙️ Engineering</button>
+              <button class="filter-btn"        id="collegeTechnology"  onclick="setFilter('college','technology')">💻 Technology</button>
+            </div>
+          </div>
+          <div style="margin-left:auto;">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#22c55e;font-weight:600;">
+              <span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>LIVE
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Summary -->
+      <div id="studentSection">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="font-family:var(--font-head);">👤 Students</h3>
+          <button class="btn btn-outline btn-sm" onclick="exportExcel('students')">📊 Export Excel</button>
+        </div>
+        <div class="card" style="margin-bottom:32px;">
+          <div class="table-wrap"><table class="data-table" id="studentTable">
+            <thead><tr><th>Department</th><th>Enrolled</th><th>Completed</th><th>Completion %</th><th>Certificates</th><th>Status</th></tr></thead>
+            <tbody id="studentBody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);">Loading...</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Faculty Summary -->
+      <div id="facultySection">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="font-family:var(--font-head);">🎓 Faculty</h3>
+          <button class="btn btn-outline btn-sm" onclick="exportExcel('faculty')">📊 Export Excel</button>
+        </div>
+        <div class="card" style="margin-bottom:32px;">
+          <div class="table-wrap"><table class="data-table" id="facultyTable">
+            <thead><tr><th>Department</th><th>Enrolled</th><th>Completed</th><th>Completion %</th><th>Certificates</th><th>Status</th></tr></thead>
+            <tbody id="facultyBody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);">Loading...</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    const admin = requireAdmin();
+    let activeRole = 'all', activeCollege = 'all';
+    let lastStudentSummary = [], lastFacultySummary = [];
+
+    const COLLEGE_MAP = {
+      engineering: "St. Joseph's College of Engineering",
+      technology:  "St. Joseph's Institute of Technology",
+    };
+    const DEPTS = ['CSE','IT','AML','ADS','ECE','EEE','EIE','Mech','Bio','Chem'];
+
+    if (admin) {
+      document.getElementById('navAdmin').textContent = admin.name;
+      document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-dept-summary.html');
+      loadSummary();
+      setInterval(loadSummary, 15000);
+    }
+
+    function setFilter(type, value) {
+      if (type === 'role') {
+        activeRole = value;
+        ['All','Students','Faculty'].forEach(v =>
+          document.getElementById('role' + v).classList.toggle('active', value === v.toLowerCase())
+        );
+      } else {
+        activeCollege = value;
+        ['All','Engineering','Technology'].forEach(v =>
+          document.getElementById('college' + v).classList.toggle('active', value === v.toLowerCase())
+        );
+      }
+      loadSummary();
+    }
+
+    async function loadSummary() {
+      try {
+        const [studParts, facParts, studSnap, facSnap] = await Promise.all([
+          apiCall('GET', '/admin/all-participation'),
+          apiCall('GET', '/admin/faculty-participation'),
+          apiCall('GET', '/admin/students'),
+          apiCall('GET', '/admin/faculty/all'),
+        ]);
+
+        const studMap = {};
+        studSnap.forEach(s => { studMap[s.uid||s.id] = { college: s.college, department: s.department }; });
+        const facMap = {};
+        facSnap.forEach(f => { facMap[f.uid||f.id] = { college: f.college, department: f.department }; });
+
+        const collegeFilter = activeCollege !== 'all' ? COLLEGE_MAP[activeCollege] : null;
+
+        const filterParts = (parts, map, key) => collegeFilter
+          ? parts.filter(p => map[p[key]]?.college === collegeFilter)
+          : parts;
+
+        const filteredStud = filterParts(studParts, studMap, 'studentUid');
+        const filteredFac  = filterParts(facParts,  facMap,  'facultyUid');
+
+        const deptSummary = (parts, map, key) => DEPTS.map(dept => {
+          const dp = parts.filter(p => (map[p[key]]?.department || p.department) === dept);
+          const enrolled  = dp.length;
+          const completed = dp.filter(p => p.status === 'Completed').length;
+          const pct = enrolled > 0 ? Math.round((completed / enrolled) * 100) : 0;
+          return { dept, enrolled, completed, pct };
+        }).filter(d => d.enrolled > 0);
+
+        const statusLabel = pct => pct >= 75 ? '<span style="color:#10b981;font-weight:600;">✅ On Track</span>' : pct >= 40 ? '<span style="color:#f59e0b;font-weight:600;">⚠️ Moderate</span>' : '<span style="color:#ef4444;font-weight:600;">❌ Behind</span>';
+        const pctColor    = pct => pct >= 75 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#ef4444';
+
+        const renderTable = (summaries, bodyId) => {
+          const el = document.getElementById(bodyId);
+          if (!summaries.length) { el.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);">No data available.</td></tr>'; return; }
+          el.innerHTML = summaries.map(d => `
+            <tr>
+              <td class="td-name">${d.dept}</td>
+              <td>${d.enrolled}</td>
+              <td>${d.completed}</td>
+              <td><span style="font-weight:700;color:${pctColor(d.pct)}">${d.pct}%</span></td>
+              <td>${d.completed}</td>
+              <td>${statusLabel(d.pct)}</td>
+            </tr>`).join('');
+        };
+
+        // Show/hide sections based on role filter
+        document.getElementById('studentSection').style.display = (activeRole === 'all' || activeRole === 'students') ? '' : 'none';
+        document.getElementById('facultySection').style.display = (activeRole === 'all' || activeRole === 'faculty')  ? '' : 'none';
+
+        const studSummary = deptSummary(filteredStud, studMap, 'studentUid');
+        const facSummary  = deptSummary(filteredFac,  facMap,  'facultyUid');
+
+        if (activeRole === 'all' || activeRole === 'students') {
+          lastStudentSummary = studSummary;
+          renderTable(studSummary, 'studentBody');
+        }
+        if (activeRole === 'all' || activeRole === 'faculty') {
+          lastFacultySummary = facSummary;
+          renderTable(facSummary, 'facultyBody');
+        }
+
+        // Save to Firebase
+        const collegeLabel = activeCollege === 'all' ? 'All' : activeCollege === 'engineering' ? 'Engineering' : 'Technology';
+        await apiCall('POST', '/admin/dept-summary', {
+          college: collegeLabel,
+          savedAt: new Date().toISOString(),
+          students: studSummary,
+          faculty:  facSummary,
+        });
+
+      } catch (e) {
+        console.error('Summary error:', e.message);
+      }
+    }
+
+    function exportExcel(role) {
+      const data = role === 'faculty' ? lastFacultySummary : lastStudentSummary;
+      if (!data.length) return alert('No data to export.');
+      const collegeLabel = activeCollege === 'all' ? 'All' : activeCollege === 'engineering' ? 'Engineering' : 'Technology';
+      const rows = data.map(d => ({
+        Department: d.dept,
+        Enrolled: d.enrolled,
+        Completed: d.completed,
+        'Completion %': d.pct + '%',
+        Certificates: d.completed,
+        Status: d.pct >= 75 ? 'On Track' : d.pct >= 40 ? 'Moderate' : 'Behind',
+      }));
+      exportToExcel(rows, `${role === 'faculty' ? 'Faculty' : 'Student'}_Dept_Summary_${collegeLabel}`);
+    }
+  </script>
+</body>
+</html>

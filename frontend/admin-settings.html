@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings – Admin – CompanyConnect</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="shared.js"></script>
+  <style>
+    .settings-section { margin-bottom: 32px; }
+    .settings-section h3 { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-label { font-size: 14px; font-weight: 500; }
+    .toggle-desc { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border2); border-radius: 99px; cursor: pointer; transition: 0.3s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
+    .toggle input:checked + .toggle-slider { background: var(--primary); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .danger-btn { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .danger-btn:hover { background: #fca5a5; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><div class="brand-hex">⬡</div><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div></a>
+    <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
+  </nav>
+  <div class="app-layout">
+    <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
+    <main class="main-content">
+      <div class="page-header anim"><div class="breadcrumb">Admin / <span>Settings</span></div><h1>Settings</h1><p>Manage and control the student and faculty portals.</p></div>
+      <div id="alertBox"></div>
+
+      <div class="grid-2 anim anim-1">
+
+        <!-- Left Column -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+
+          <!-- Portal Access -->
+          <div class="card">
+            <div class="settings-section">
+              <h3>🔐 Portal Access Control</h3>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Student Registration</div><div class="toggle-desc">Allow new students to register</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleStudentReg" checked onchange="saveSetting('studentRegistration', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Faculty Registration</div><div class="toggle-desc">Allow new faculty to register</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleFacultyReg" checked onchange="saveSetting('facultyRegistration', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Student Login</div><div class="toggle-desc">Allow approved students to log in</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleStudentLogin" checked onchange="saveSetting('studentLogin', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Faculty Login</div><div class="toggle-desc">Allow approved faculty to log in</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleFacultyLogin" checked onchange="saveSetting('facultyLogin', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submission Controls -->
+          <div class="card">
+            <div class="settings-section">
+              <h3>📝 Submission Controls</h3>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Student Participation Submission</div><div class="toggle-desc">Allow students to submit participation</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleStudentSubmit" checked onchange="saveSetting('studentSubmission', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Faculty Participation Submission</div><div class="toggle-desc">Allow faculty to submit participation</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleFacultySubmit" checked onchange="saveSetting('facultySubmission', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Document Upload (Students)</div><div class="toggle-desc">Allow students to upload documents</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleStudentUpload" checked onchange="saveSetting('studentUpload', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Document Upload (Faculty)</div><div class="toggle-desc">Allow faculty to upload documents</div></div>
+                <label class="toggle"><input type="checkbox" id="toggleFacultyUpload" checked onchange="saveSetting('facultyUpload', this.checked)"/><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+
+          <!-- Admin Profile -->
+          <div class="card">
+            <div class="settings-section">
+              <h3>👤 Admin Profile</h3>
+              <div class="form-group"><label class="form-label">Name</label><input id="adminName" class="form-control" disabled style="opacity:0.6;cursor:not-allowed;"/></div>
+              <div class="form-group"><label class="form-label">Email</label><input id="adminEmail" class="form-control" disabled style="opacity:0.6;cursor:not-allowed;"/></div>
+              <div class="form-group"><label class="form-label">Role</label><input id="adminRole" class="form-control" disabled style="opacity:0.6;cursor:not-allowed;"/></div>
+            </div>
+          </div>
+
+          <!-- Change Password -->
+          <div class="card">
+            <div class="settings-section">
+              <h3>🔒 Change Password</h3>
+              <div id="pwAlertBox"></div>
+              <p style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6;">Send a password reset verification email to your registered admin email address.</p>
+              <button class="btn btn-primary" id="sendPwBtn" onclick="sendResetEmail()">📧 Send Verification Email</button>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="card" style="border-color:#fca5a5;">
+            <div class="settings-section">
+              <h3 style="color:var(--danger);">⚠️ Danger Zone</h3>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Reset All Student Statuses</div><div class="toggle-desc">Set all participation back to "Doing"</div></div>
+                <button class="danger-btn" onclick="confirmAction('resetStudentStatus')">Reset</button>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Reset All Faculty Statuses</div><div class="toggle-desc">Set all faculty participation back to "Doing"</div></div>
+                <button class="danger-btn" onclick="confirmAction('resetFacultyStatus')">Reset</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const admin = requireAdmin();
+    if (admin) {
+      document.getElementById('navAdmin').textContent = admin.name;
+      document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-settings.html');
+      document.getElementById('adminName').value  = admin.name  || '—';
+      document.getElementById('adminEmail').value = admin.email || '—';
+      document.getElementById('adminRole').value  = admin.role  || '—';
+      loadSettings();
+    }
+
+    async function loadSettings() {
+      try {
+        const s = await apiCall('GET', '/admin/settings');
+        const map = {
+          studentRegistration: 'toggleStudentReg',
+          facultyRegistration: 'toggleFacultyReg',
+          studentLogin:        'toggleStudentLogin',
+          facultyLogin:        'toggleFacultyLogin',
+          studentSubmission:   'toggleStudentSubmit',
+          facultySubmission:   'toggleFacultySubmit',
+          studentUpload:       'toggleStudentUpload',
+          facultyUpload:       'toggleFacultyUpload',
+        };
+        Object.entries(map).forEach(([key, id]) => {
+          const el = document.getElementById(id);
+          if (el && s[key] !== undefined) el.checked = s[key];
+        });
+      } catch (e) { /* use defaults if no settings saved yet */ }
+    }
+
+    async function saveSetting(key, value) {
+      try {
+        await apiCall('POST', '/admin/settings', { [key]: value });
+        showAlert('alertBox', `Setting updated successfully.`, 'success');
+      } catch (e) { showAlert('alertBox', e.message, 'error'); }
+    }
+
+    async function sendResetEmail() {
+      const btn = document.getElementById('sendPwBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        await apiCall('POST', '/auth/send-password-reset', { email: admin.email });
+        showAlert('pwAlertBox', '📧 Verification email sent to ' + admin.email, 'success');
+        btn.textContent = '✅ Email Sent';
+      } catch (e) {
+        showAlert('pwAlertBox', e.message, 'error');
+        btn.disabled = false; btn.textContent = '📧 Send Verification Email';
+      }
+    }
+
+    async function confirmAction(action) {
+      const messages = {
+        resetStudentStatus: 'Reset ALL student participation statuses to "Doing"? This cannot be undone.',
+        resetFacultyStatus: 'Reset ALL faculty participation statuses to "Doing"? This cannot be undone.',
+      };
+      if (!confirm(messages[action])) return;
+      try {
+        await apiCall('POST', '/admin/bulk-action', { action });
+        showAlert('alertBox', 'Action completed successfully.', 'success');
+      } catch (e) { showAlert('alertBox', e.message, 'error'); }
+    }
+  </script>
+</body>
+</html>

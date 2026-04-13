@@ -19,18 +19,20 @@ const upload = multer({
 
 exports.uploadMiddleware = upload.single('pdf');
 
-// ── STUDENT UPLOADS PDF ───────────────────────────────
+// ── UPLOAD PDF (Student or Faculty) ──────────────────
 exports.submitDocument = async (req, res) => {
   try {
     const { programName, docType, description, replaceDocId } = req.body;
-    const { uid, email } = req.user;
+    const { uid, email, role } = req.user;
 
     if (!req.file) return res.status(400).json({ message: 'PDF file is required.' });
     if (!programName || !docType) return res.status(400).json({ message: 'Program name and document type are required.' });
 
-    const studentDoc = await db.collection('students').doc(uid).get();
-    if (!studentDoc.exists) return res.status(404).json({ message: 'Student not found.' });
-    const student = studentDoc.data();
+    // Fetch uploader profile from correct collection
+    const collection = role === 'faculty' ? 'faculty' : 'students';
+    const profileDoc = await db.collection(collection).doc(uid).get();
+    if (!profileDoc.exists) return res.status(404).json({ message: 'Profile not found.' });
+    const profile = profileDoc.data();
 
     // Upload to Cloudinary
     const fileUrl = await new Promise((resolve, reject) => {
@@ -41,15 +43,12 @@ exports.submitDocument = async (req, res) => {
       stream.end(req.file.buffer);
     });
 
-    // If re-uploading, update the existing doc record instead of creating new
+    // If re-uploading, update existing record
     if (replaceDocId) {
       await db.collection('documents').doc(replaceDocId).update({
-        fileUrl,
-        fileName: req.file.originalname,
-        status: 'Under Review',
-        adminRemark: '',
-        submittedAt: new Date().toISOString(),
-        reviewedAt: null,
+        fileUrl, fileName: req.file.originalname,
+        status: 'Under Review', adminRemark: '',
+        submittedAt: new Date().toISOString(), reviewedAt: null,
       });
       return res.status(200).json({ message: 'Document re-uploaded successfully.', id: replaceDocId });
     }
@@ -57,18 +56,15 @@ exports.submitDocument = async (req, res) => {
     const docRef = await db.collection('documents').add({
       studentUid: uid,
       studentEmail: email,
-      studentName: student.name,
-      department: student.department,
-      registerNumber: student.registerNumber,
-      programName,
-      docType,
-      fileUrl,
+      studentName: profile.name,
+      department: profile.department,
+      registerNumber: profile.registerNumber || '',
+      uploaderRole: role || 'student',
+      programName, docType, fileUrl,
       fileName: req.file.originalname,
       description: description || '',
-      status: 'Under Review',
-      adminRemark: '',
-      submittedAt: new Date().toISOString(),
-      reviewedAt: null,
+      status: 'Under Review', adminRemark: '',
+      submittedAt: new Date().toISOString(), reviewedAt: null,
     });
 
     res.status(201).json({ message: 'Document uploaded successfully.', id: docRef.id });
@@ -77,7 +73,7 @@ exports.submitDocument = async (req, res) => {
   }
 };
 
-// ── GET STUDENT'S OWN DOCUMENTS ───────────────────────
+// ── GET OWN DOCUMENTS ─────────────────────────────────
 exports.getMyDocuments = async (req, res) => {
   try {
     const { uid } = req.user;

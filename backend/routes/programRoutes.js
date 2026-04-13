@@ -3,6 +3,14 @@ const router = express.Router();
 const { db } = require('../firebase');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
+// Admin: get all programs regardless of assignTo
+router.get('/all', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const snap = await db.collection('programs').get();
+    res.json(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // Public: get programs for students (all or students)
 router.get('/', async (req, res) => {
   try {

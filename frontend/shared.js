@@ -108,12 +108,12 @@ function buildFacultyNav(active) {
 function buildAdminNav(active) {
   return [
     { href: 'admin-dashboard.html', icon: '📊', label: 'Dashboard' },
-    { href: 'admin-students.html', icon: '👥', label: 'Students' },
     { href: 'admin-pending.html', icon: '⏳', label: 'Pending Approvals' },
     { href: 'admin-verify.html', icon: '✅', label: 'Verify Documents' },
     { href: 'admin-programs.html', icon: '📚', label: 'Programs' },
     { href: 'admin-search.html', icon: '🔍', label: 'Search & Filter' },
-    { href: 'admin-reports.html', icon: '📄', label: 'Reports' },
+    { href: 'admin-dept-summary.html', icon: '🏢', label: 'Department Summary' },
+    { href: 'admin-settings.html', icon: '⚙️', label: 'Settings' },
   ].map(n => `<a href="${n.href}" class="${active === n.href ? 'active' : ''}"><span class="icon">${n.icon}</span>${n.label}</a>`).join('');
 }
 

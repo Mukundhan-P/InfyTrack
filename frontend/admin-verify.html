@@ -4,6 +4,10 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Verify Documents – Admin – CompanyConnect</title>
   <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .filter-btn { padding: 8px 20px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  </style>
 </head>
 <body>
   <nav class="navbar">
@@ -15,6 +19,19 @@
     <main class="main-content">
       <div class="page-header anim"><div class="breadcrumb">Admin / <span>Verify Documents</span></div><h1>Verify Documents</h1><p>Review submitted drive links and update verification status.</p></div>
       <div id="alertBox"></div>
+
+      <!-- Role Tabs -->
+      <div style="display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;width:fit-content;margin-bottom:16px;">
+        <button class="filter-btn active" id="tabStudents" onclick="switchTab('students')">👤 Students</button>
+        <button class="filter-btn" id="tabFaculty" onclick="switchTab('faculty')">🎓 Faculty</button>
+      </div>
+
+      <!-- College Sub-filter -->
+      <div style="display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;width:fit-content;margin-bottom:24px;">
+        <button class="filter-btn active" id="collegeAll"         onclick="switchCollege('all')">🏫 All</button>
+        <button class="filter-btn"        id="collegeEngineering" onclick="switchCollege('engineering')">⚙️ Engineering</button>
+        <button class="filter-btn"        id="collegeTechnology"  onclick="switchCollege('technology')">💻 Technology</button>
+      </div>
 
       <div class="card anim anim-1 mb-4" style="padding:16px 20px;">
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
@@ -36,9 +53,30 @@
   <script src="shared.js"></script>
   <script>
     const admin = requireAdmin();
+    let activeTab = 'students', activeCollege = 'all';
+    const collegeMap = {
+      engineering: "St. Joseph's College of Engineering",
+      technology:  "St. Joseph's Institute of Technology",
+    };
+
     if (admin) {
       document.getElementById('navAdmin').textContent = admin.name;
       document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-verify.html');
+      loadDocs();
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById('tabStudents').classList.toggle('active', tab === 'students');
+      document.getElementById('tabFaculty').classList.toggle('active', tab === 'faculty');
+      loadDocs();
+    }
+
+    function switchCollege(college) {
+      activeCollege = college;
+      ['All','Engineering','Technology'].forEach(v =>
+        document.getElementById('college' + v).classList.toggle('active', college === v.toLowerCase())
+      );
       loadDocs();
     }
 
@@ -46,9 +84,22 @@
       const status = document.getElementById('fStatus').value;
       const query = status ? `?status=${encodeURIComponent(status)}` : '';
       try {
-        const docs = await apiCall('GET', `/upload/all${query}`);
-        document.getElementById('docCount').textContent = `${docs.length} document(s)`;
-        renderDocs(docs);
+        const allDocs = await apiCall('GET', `/upload/all${query}`);
+        let filtered = allDocs.filter(d =>
+          activeTab === 'faculty' ? d.uploaderRole === 'faculty' : d.uploaderRole !== 'faculty'
+        );
+        // Apply college filter using studentName lookup via uploaderRole
+        if (activeCollege !== 'all') {
+          const collegeVal = collegeMap[activeCollege];
+          // We need to cross-reference with student/faculty collection
+          // Use department as proxy — fetch all students/faculty and match by uid
+          const collection = activeTab === 'faculty' ? 'faculty' : 'students';
+          const profileSnap = await apiCall('GET', activeTab === 'faculty' ? '/admin/faculty/all' : '/admin/students');
+          const collegeUids = new Set(profileSnap.filter(p => p.college === collegeVal).map(p => p.uid || p.id));
+          filtered = filtered.filter(d => collegeUids.has(d.studentUid));
+        }
+        document.getElementById('docCount').textContent = `${filtered.length} document(s)`;
+        renderDocs(filtered);
       } catch (err) {
         document.getElementById('docCards').innerHTML = `<div class="card"><p class="text-muted">${err.message}</p></div>`;
       }
@@ -65,7 +116,7 @@
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
             <div>
               <div style="font-family:var(--font-head);font-size:16px;font-weight:700;">${d.studentName}</div>
-              <div class="text-mono" style="margin-top:2px;">${d.department} · ${d.registerNumber}</div>
+              <div class="text-mono" style="margin-top:2px;">${d.department} · ${d.uploaderRole === 'faculty' ? 'Faculty' : d.registerNumber}</div>
               <div style="margin-top:6px;font-size:13px;"><strong>Program:</strong> ${d.programName}</div>
               <div style="font-size:13px;"><strong>Type:</strong> ${d.docType}</div>
               ${d.description ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;">${d.description}</div>` : ''}
@@ -76,7 +127,7 @@
             </div>
           </div>
           <div style="margin-bottom:14px;">
-            <a href="${d.driveLink}" target="_blank" class="btn btn-outline btn-sm">🔗 View Document</a>
+            <a href="${d.driveLink||d.fileUrl}" target="_blank" class="btn btn-outline btn-sm">🔗 View Document</a>
           </div>
           ${d.adminRemark ? `<div style="padding:8px 12px;background:#fff3cd;border-radius:8px;font-size:12px;margin-bottom:12px;">Previous remark: ${d.adminRemark}</div>` : ''}
           <div class="form-group">

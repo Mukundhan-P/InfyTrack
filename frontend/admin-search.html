@@ -4,6 +4,10 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Search & Filter – Admin – CompanyConnect</title>
   <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .filter-btn { padding: 8px 20px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  </style>
 </head>
 <body>
   <nav class="navbar">
@@ -13,7 +17,20 @@
   <div class="app-layout">
     <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
     <main class="main-content">
-      <div class="page-header anim"><div class="breadcrumb">Admin / <span>Search & Filter</span></div><h1>Search & Filter</h1><p>Find students by department, batch, program, and status.</p></div>
+      <div class="page-header anim"><div class="breadcrumb">Admin / <span>Search & Filter</span></div><h1>Search & Filter</h1><p>Find students and faculty by department, program, and status.</p></div>
+
+      <!-- Role Tabs -->
+      <div style="display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;width:fit-content;margin-bottom:12px;">
+        <button class="filter-btn active" id="tabStudents" onclick="switchRole('students')">👤 Students</button>
+        <button class="filter-btn" id="tabFaculty" onclick="switchRole('faculty')">🎓 Faculty</button>
+      </div>
+
+      <!-- College Filter -->
+      <div style="display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;width:fit-content;margin-bottom:24px;">
+        <button class="filter-btn active" id="collegeAll"         onclick="switchCollege('all')">🏫 All</button>
+        <button class="filter-btn"        id="collegeEngineering" onclick="switchCollege('engineering')">⚙️ Engineering</button>
+        <button class="filter-btn"        id="collegeTechnology"  onclick="switchCollege('technology')">💻 Technology</button>
+      </div>
 
       <div class="card anim anim-1 mb-4">
         <div class="card-header"><div class="card-title">Filters</div><button class="btn btn-sm btn-outline" onclick="clearFilters()">Clear All</button></div>
@@ -24,7 +41,7 @@
               <option>ECE</option><option>EEE</option><option>EIE</option><option>Mech</option>
             </select>
           </div>
-          <div class="form-group" style="margin:0;"><label class="form-label">Batch</label>
+          <div class="form-group" style="margin:0;" id="batchGroup"><label class="form-label">Batch</label>
             <select id="fBatch" class="form-control"><option value="">All Batches</option>
               <option>2022-26</option><option>2023-27</option><option>2024-28</option>
             </select>
@@ -37,8 +54,8 @@
               <option>Doing</option><option>Completed</option>
             </select>
           </div>
-          <div class="form-group" style="margin:0;"><label class="form-label">Search Name</label>
-            <input id="fSearch" class="form-control" placeholder="Student name..."/>
+          <div class="form-group" style="margin:0;"><label class="form-label" id="searchLabel">Search Name</label>
+            <input id="fSearch" class="form-control" placeholder="Name..."/>
           </div>
         </div>
         <div style="display:flex;gap:12px;margin-top:16px;">
@@ -50,8 +67,8 @@
       <div class="card anim anim-2">
         <div class="card-header"><div class="card-title">Results (<span id="rCount">—</span>)</div></div>
         <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Student</th><th>Dept</th><th>Batch</th><th>Program</th><th>Type</th><th>Status</th><th>Reg ID</th><th>Enrolled</th></tr></thead>
+          <table class="data-table" id="resultTableWrap">
+            <thead id="tableHead"></thead>
             <tbody id="resultTable"><tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">Use filters above to search.</td></tr></tbody>
           </table>
         </div>
@@ -62,52 +79,125 @@
   <script>
     const admin = requireAdmin();
     let allResults = [];
+    let activeRole = 'students', activeCollege = 'all';
+    const COLLEGE_MAP = {
+      engineering: "St. Joseph's College of Engineering",
+      technology:  "St. Joseph's Institute of Technology",
+    };
 
     if (admin) {
       document.getElementById('navAdmin').textContent = admin.name;
       document.getElementById('sidebarLinks').innerHTML = buildAdminNav('admin-search.html');
       loadProgramOptions();
+      setTableHeaders();
       runFilter();
+    }
+
+    function switchRole(role) {
+      activeRole = role;
+      document.getElementById('tabStudents').classList.toggle('active', role === 'students');
+      document.getElementById('tabFaculty').classList.toggle('active', role === 'faculty');
+      document.getElementById('batchGroup').style.display = role === 'students' ? '' : 'none';
+      document.getElementById('fSearch').placeholder = role === 'faculty' ? 'Faculty name...' : 'Student name...';
+      setTableHeaders();
+      updateProgramOptions();
+      clearFilters();
+    }
+
+    function switchCollege(college) {
+      activeCollege = college;
+      ['All','Engineering','Technology'].forEach(v =>
+        document.getElementById('college' + v).classList.toggle('active', college === v.toLowerCase())
+      );
+      runFilter();
+    }
+
+    function setTableHeaders() {
+      document.getElementById('tableHead').innerHTML = activeRole === 'faculty'
+        ? '<tr><th>Faculty</th><th>Dept</th><th>Designation</th><th>Program</th><th>Type</th><th>Status</th><th>Enrolled</th></tr>'
+        : '<tr><th>Student</th><th>Dept</th><th>Batch</th><th>Program</th><th>Type</th><th>Status</th><th>Reg ID</th><th>Enrolled</th></tr>';
     }
 
     async function loadProgramOptions() {
       try {
-        const programs = await apiCall('GET', '/programs');
+        const [studentPrograms, facultyPrograms] = await Promise.all([
+          apiCall('GET', '/programs'),
+          apiCall('GET', '/programs/faculty'),
+        ]);
         const sel = document.getElementById('fProg');
-        programs.forEach(p => sel.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+        // Store both sets, update on tab switch
+        sel._studentPrograms = studentPrograms;
+        sel._facultyPrograms = facultyPrograms;
+        updateProgramOptions();
       } catch (e) {}
+    }
+
+    function updateProgramOptions() {
+      const sel = document.getElementById('fProg');
+      const programs = activeRole === 'faculty' ? (sel._facultyPrograms || []) : (sel._studentPrograms || []);
+      sel.innerHTML = '<option value="">All Programs</option>' + programs.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
     }
 
     async function runFilter() {
       try {
-        const params = new URLSearchParams();
-        const dept = document.getElementById('fDept').value;
-        const batch = document.getElementById('fBatch').value;
-        const prog = document.getElementById('fProg').value;
+        const dept   = document.getElementById('fDept').value;
+        const batch  = document.getElementById('fBatch').value;
+        const prog   = document.getElementById('fProg').value;
         const status = document.getElementById('fStatus').value;
         const search = document.getElementById('fSearch').value.toLowerCase();
-        if (dept) params.set('dept', dept);
-        if (batch) params.set('year', batch);
-        if (prog) params.set('program', prog);
-        if (status) params.set('status', status);
 
-        allResults = await apiCall('GET', `/admin/report?${params.toString()}`);
-        let filtered = allResults;
-        if (search) filtered = filtered.filter(r => r['Student Name']?.toLowerCase().includes(search));
+        if (activeRole === 'faculty') {
+          const snap = await apiCall('GET', '/admin/faculty-participation');
+          const facSnap = await apiCall('GET', '/admin/faculty/all');
+          const facMap = {};
+          facSnap.forEach(f => { facMap[f.uid||f.id] = f.college; });
+          let filtered = snap;
+          if (activeCollege !== 'all') filtered = filtered.filter(r => facMap[r.facultyUid] === COLLEGE_MAP[activeCollege]);
+          if (dept)   filtered = filtered.filter(r => r.department === dept);
+          if (prog)   filtered = filtered.filter(r => r.programName === prog);
+          if (status) filtered = filtered.filter(r => r.status === status);
+          if (search) filtered = filtered.filter(r => r.name?.toLowerCase().includes(search));
 
-        document.getElementById('rCount').textContent = filtered.length;
-        const tbody = document.getElementById('resultTable');
-        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">No results found.</td></tr>'; return; }
-        tbody.innerHTML = filtered.map(p => `<tr>
-          <td class="td-name">${p['Student Name']}</td>
-          <td><span class="badge badge-training">${p.Department || '—'}</span></td>
-          <td class="td-mono">${p.Batch || '—'}</td>
-          <td style="font-size:12px;max-width:180px;">${p['Program Name'] || '—'}</td>
-          <td>${typeBadge(p['Program Type'])}</td>
-          <td>${badgeHTML(p.Status)}</td>
-          <td class="td-mono">${p['Reg ID'] || '—'}</td>
-          <td class="td-mono">${formatDate(p['Enroll Date'])}</td>
-        </tr>`).join('');
+          document.getElementById('rCount').textContent = filtered.length;
+          allResults = filtered.map(r => ({ 'Faculty Name': r.name, Department: r.department, Designation: r.designation||'—', 'Program Name': r.programName, 'Program Type': r.programType, Status: r.status, 'Enroll Date': r.enrollDate }));
+          const tbody = document.getElementById('resultTable');
+          if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);">No results found.</td></tr>'; return; }
+          tbody.innerHTML = filtered.map(p => `<tr>
+            <td class="td-name">${p.name||'—'}</td>
+            <td><span class="badge badge-training">${p.department||'—'}</span></td>
+            <td class="td-mono">${p.designation||'—'}</td>
+            <td style="font-size:12px;max-width:180px;">${p.programName||'—'}</td>
+            <td>${typeBadge(p.programType)}</td>
+            <td>${badgeHTML(p.status)}</td>
+            <td class="td-mono">${formatDate(p.enrollDate)}</td>
+          </tr>`).join('');
+        } else {
+          const params = new URLSearchParams();
+          if (dept)  params.set('dept', dept);
+          if (batch) params.set('year', batch);
+          if (prog)  params.set('program', prog);
+          if (status) params.set('status', status);
+          if (activeCollege !== 'all') params.set('college', activeCollege);
+
+          const data = await apiCall('GET', `/admin/report?${params.toString()}`);
+          let filtered = data;
+          if (search) filtered = filtered.filter(r => r['Student Name']?.toLowerCase().includes(search));
+
+          document.getElementById('rCount').textContent = filtered.length;
+          allResults = filtered;
+          const tbody = document.getElementById('resultTable');
+          if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">No results found.</td></tr>'; return; }
+          tbody.innerHTML = filtered.map(p => `<tr>
+            <td class="td-name">${p['Student Name']}</td>
+            <td><span class="badge badge-training">${p.Department||'—'}</span></td>
+            <td class="td-mono">${p.Batch||'—'}</td>
+            <td style="font-size:12px;max-width:180px;">${p['Program Name']||'—'}</td>
+            <td>${typeBadge(p['Program Type'])}</td>
+            <td>${badgeHTML(p.Status)}</td>
+            <td class="td-mono">${p['Reg ID']||'—'}</td>
+            <td class="td-mono">${formatDate(p['Enroll Date'])}</td>
+          </tr>`).join('');
+        }
       } catch (e) {
         document.getElementById('resultTable').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">${e.message}</td></tr>`;
       }
@@ -119,7 +209,7 @@
     }
 
     function exportResults() {
-      exportToExcel(allResults, 'Search_Results');
+      exportToExcel(allResults, activeRole === 'faculty' ? 'Faculty_Results' : 'Student_Results');
     }
   </script>
 </body>
