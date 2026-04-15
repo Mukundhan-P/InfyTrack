@@ -156,7 +156,7 @@
       try {
         const email = user.email;
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
+        const timeout = setTimeout(() => controller.abort(), 60000);
         const res = await fetch(`${API}/auth/send-password-reset`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Auth.getToken()}` },
@@ -169,7 +169,7 @@
         showAlert('pwAlertBox', '📧 Verification email sent to ' + email + '. Check your inbox.', 'success');
         btn.textContent = '✅ Email Sent';
       } catch (e) {
-        const msg = e.name === 'AbortError' ? 'Request timed out. Server may be waking up, try again in 30 seconds.' : e.message;
+        const msg = e.name === 'AbortError' ? 'Server is waking up, please try again in a moment.' : e.message;
         showAlert('pwAlertBox', msg, 'error');
         btn.disabled = false; btn.textContent = '📧 Send Verification Email';
       }
