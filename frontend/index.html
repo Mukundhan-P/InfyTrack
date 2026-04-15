@@ -168,7 +168,7 @@
   <div class="nav-wrapper">
     <nav class="navbar">
       <a href="index.html" class="nav-brand">
-        <img src="logo.jpeg" alt="StudentsConnect Logo" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
+        <img src="bee2.jpeg" alt="StudentsConnect Logo" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
         <div>
           <div class="brand-title">CompanyConnect</div>
           <div class="brand-subtitle">Student Activity Tracking</div>
@@ -360,7 +360,7 @@
     }
 
     function loadStats() {
-      fetch('http://localhost:5000/api/public/stats')
+      fetch('https://infytrack.onrender.com/api/public/stats')
         .then(r => r.json())
         .then(data => { if (!data.message) applyStats(data); })
         .catch(() => {});
@@ -381,7 +381,7 @@
 
     async function loadPrograms() {
       try {
-        const res = await fetch('http://localhost:5000/api/programs/all-public');
+        const res = await fetch('https://infytrack.onrender.com/api/programs/all-public');
         const data = await res.json();
         const programs = Array.isArray(data) ? data : [];
         if (!programs.length) throw new Error('empty');

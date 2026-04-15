@@ -114,11 +114,8 @@ node seedAdmin.js
 ```bash
 npm run dev
 ```
-
 ### 6. Open the frontend
-Visit `http://localhost:5000` in your browser.
-
----
+Visit https://infy-track.vercel.app in your browser.
 
 ## 🔐 Default Credentials
 
