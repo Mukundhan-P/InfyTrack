@@ -160,7 +160,10 @@ exports.sendPasswordReset = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required.' });
 
-    const continueUrl = 'https://infy-track.vercel.app/reset-password';
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS)
+      return res.status(500).json({ message: 'Email service not configured on server.' });
+
+    const continueUrl = 'https://infytrack.onrender.com/reset-password.html';
     const link = await auth.generatePasswordResetLink(email, { url: continueUrl });
 
     const nodemailer = require('nodemailer');
