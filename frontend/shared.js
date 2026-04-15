@@ -85,28 +85,74 @@ function showAlert(containerId, msg, type = 'success') {
   setTimeout(() => { el.innerHTML = ''; }, 5000);
 }
 
+function _buildNavLinks(links, active) {
+  return links.map(n => `<a href="${n.href}" class="${active === n.href ? 'active' : ''}"><span class="icon">${n.icon}</span>${n.label}</a>`).join('');
+}
+
+function _injectMobileNav() {
+  if (document.getElementById('_sidebarOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = '_sidebarOverlay';
+  overlay.className = 'sidebar-overlay';
+  overlay.onclick = closeMobileNav;
+  document.body.appendChild(overlay);
+
+  const navbar = document.querySelector('.navbar');
+  if (navbar && !navbar.querySelector('.nav-hamburger')) {
+    const btn = document.createElement('button');
+    btn.className = 'nav-hamburger';
+    btn.id = '_navHamburger';
+    btn.innerHTML = '<span></span><span></span><span></span>';
+    btn.onclick = toggleMobileNav;
+    navbar.appendChild(btn);
+  }
+}
+
+function toggleMobileNav() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('_sidebarOverlay');
+  const btn = document.getElementById('_navHamburger');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', !isOpen);
+  overlay && overlay.classList.toggle('open', !isOpen);
+  btn && btn.classList.toggle('open', !isOpen);
+}
+
+function closeMobileNav() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('_sidebarOverlay');
+  const btn = document.getElementById('_navHamburger');
+  sidebar && sidebar.classList.remove('mobile-open');
+  overlay && overlay.classList.remove('open');
+  btn && btn.classList.remove('open');
+}
+
 function buildStudentNav(active) {
-  return [
+  setTimeout(_injectMobileNav, 0);
+  return _buildNavLinks([
     { href: 'dashboard.html', icon: '📊', label: 'Dashboard' },
     { href: 'programs.html', icon: '📚', label: 'Programs' },
     { href: 'participation.html', icon: '📝', label: 'Submit Participation' },
     { href: 'status.html', icon: '🔍', label: 'Track Status' },
     { href: 'profile.html', icon: '⚙️', label: 'Settings' },
-  ].map(n => `<a href="${n.href}" class="${active === n.href ? 'active' : ''}"><span class="icon">${n.icon}</span>${n.label}</a>`).join('');
+  ], active);
 }
 
 function buildFacultyNav(active) {
-  return [
+  setTimeout(_injectMobileNav, 0);
+  return _buildNavLinks([
     { href: 'faculty-dashboard.html', icon: '📊', label: 'Dashboard' },
     { href: 'faculty-programs.html', icon: '📚', label: 'Programs' },
     { href: 'faculty-participation.html', icon: '📝', label: 'Submit Participation' },
     { href: 'faculty-status.html', icon: '🔍', label: 'Track Status' },
     { href: 'faculty-settings.html', icon: '⚙️', label: 'Settings' },
-  ].map(n => `<a href="${n.href}" class="${active === n.href ? 'active' : ''}"><span class="icon">${n.icon}</span>${n.label}</a>`).join('');
+  ], active);
 }
 
 function buildAdminNav(active) {
-  return [
+  setTimeout(_injectMobileNav, 0);
+  return _buildNavLinks([
     { href: 'admin-dashboard.html', icon: '📊', label: 'Dashboard' },
     { href: 'admin-pending.html', icon: '⏳', label: 'Pending Approvals' },
     { href: 'admin-verify.html', icon: '✅', label: 'Verify Documents' },
@@ -114,7 +160,7 @@ function buildAdminNav(active) {
     { href: 'admin-search.html', icon: '🔍', label: 'Search & Filter' },
     { href: 'admin-dept-summary.html', icon: '🏢', label: 'Department Summary' },
     { href: 'admin-settings.html', icon: '⚙️', label: 'Settings' },
-  ].map(n => `<a href="${n.href}" class="${active === n.href ? 'active' : ''}"><span class="icon">${n.icon}</span>${n.label}</a>`).join('');
+  ], active);
 }
 
 function doLogout(redirect = 'login.html') {

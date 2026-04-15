@@ -152,7 +152,12 @@
 
       .section-title { font-size: 28px; }
 
-      .program-card { flex: 0 0 260px; }
+      .programs-section { padding: 48px 0; }
+      .carousel-wrapper { padding: 16px 0 60px; }
+      .program-card { flex: 0 0 calc(100vw - 48px); margin: 0; opacity: 1 !important; transform: scale(1) !important; }
+      .program-card.active { transform: scale(1) !important; }
+      .nav-buttons { top: auto; bottom: 0; transform: none; justify-content: center; gap: 16px; }
+      .carousel-dots { margin-top: 8px; }
 
       .footer { padding: 24px 20px; flex-direction: column; text-align: center; }
     }
@@ -315,7 +320,7 @@
   <div class="footer-wrapper">
     <div class="footer">
       <a href="#" class="nav-brand">
-        <img src="logo.jpeg" alt="StudentsConnect Logo" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
+        <img src="bee2.jpeg" alt="StudentsConnect Logo" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
         <div>
           <div class="brand-title" style="font-size:14px;">CompanyConnect</div>
           <div class="brand-subtitle">Student Activity Tracking</div>
@@ -440,9 +445,15 @@
       dots.forEach(d => d.classList.remove('active'));
       if (cards[currentIndex]) cards[currentIndex].classList.add('active');
       if (dots[currentIndex]) dots[currentIndex].classList.add('active');
-      const width = 320;
-      const centerOffset = (track.parentElement.clientWidth / 2) - (width / 2);
-      track.style.transform = `translateX(${centerOffset - currentIndex * width}px)`;
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        const cardWidth = track.parentElement.clientWidth;
+        track.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
+      } else {
+        const width = 320;
+        const centerOffset = (track.parentElement.clientWidth / 2) - (width / 2);
+        track.style.transform = `translateX(${centerOffset - currentIndex * width}px)`;
+      }
     }
 
     function nextSlide() {
