@@ -8,8 +8,14 @@
 </head>
 <body>
   <nav class="navbar">
-    <a href="index.html" class="nav-brand" style="text-decoration:none;"><img src="logo.jpeg" alt="StudentsConnect Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover; margin-right: 8px;"><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div></a>
-    <div class="nav-links"><span id="navUser" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="login.html" onclick="doLogout()" class="btn-nav">Logout</a></div>
+    <a href="index.html" class="nav-brand" style="text-decoration:none;">
+      <img src="bee2.jpeg" alt="CompanyConnect Logo" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">
+      <div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Infosys Springboard Tracker</div></div>
+    </a>
+    <div class="nav-links">
+      <span id="navUser" style="color:rgba(255,255,255,0.7);font-size:13px;"></span>
+      <a href="login.html" onclick="doLogout()" class="btn-nav">Logout</a>
+    </div>
   </nav>
   <div class="app-layout">
     <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Student Menu</div><div id="sidebarLinks"></div></div></aside>
@@ -28,7 +34,7 @@
             <div class="card-title">Progress by Type</div>
             <span id="liveIndicator" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#22c55e;font-weight:600;"><span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>LIVE</span>
           </div>
-          <canvas id="barChart" height="100" style="background:transparent;"></canvas>
+          <div class="chart-container"><canvas id="barChart" height="120" style="background:transparent;"></canvas></div>
         </div>
       </div>
 

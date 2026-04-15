@@ -9,36 +9,50 @@
     .filter-btn { padding: 7px 16px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .dash-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+    .college-filter { display:flex; background:rgba(255,255,255,0.05); padding:4px; border-radius:99px; border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; }
+    .role-filter { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    @media (max-width:768px) {
+      .dash-header { flex-direction:column; align-items:flex-start; }
+      .college-filter { width:100%; justify-content:center; }
+      .role-filter .filter-btn { flex:1; text-align:center; padding:10px 12px; font-size:13px; }
+      #statsRow, #statsRow2 { grid-template-columns:1fr 1fr !important; }
+    }
+    @media (max-width:480px) {
+      #statsRow, #statsRow2 { grid-template-columns:1fr !important; }
+    }
   </style>
 </head>
 <body>
   <nav class="navbar">
     <a href="index.html" class="nav-brand" style="text-decoration:none;">
-      <img src="logo.jpeg" alt="StudentsConnect Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover; margin-right: 8px;">
+      <img src="bee2.jpeg" alt="CompanyConnect Logo" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">
       <div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div>
     </a>
-    <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
+    <div class="nav-links">
+      <span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span>
+      <a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a>
+    </div>
   </nav>
   <div class="app-layout">
     <aside class="sidebar"><div class="sidebar-section"><div class="sidebar-label">Admin Menu</div><div id="sidebarLinks"></div></div></aside>
     <main class="main-content">
-      <div class="page-header anim" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+      <div class="dash-header anim">
         <div>
-          <h1 style="margin: 0; font-size: 24px;">Admin Dashboard</h1>
-          <p style="margin: 4px 0 0 0; color: var(--text3); font-size: 14px;">Overview of all activities and analytics</p>
+          <h1 style="margin:0;font-size:24px;">Admin Dashboard</h1>
+          <p style="margin:4px 0 0;color:var(--text3);font-size:14px;">Overview of all activities and analytics</p>
         </div>
-        <div style="display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">
-          <button class="filter-btn" id="collegeEngineering" onclick="setFilter('college','engineering')" style="border:none; background:transparent; border-radius: 99px;">Engineering</button>
-          <button class="filter-btn" id="collegeTechnology" onclick="setFilter('college','technology')" style="border:none; background:transparent; border-radius: 99px;">Technology</button>
-          <button class="filter-btn active" id="collegeAll" onclick="setFilter('college','all')" style="border:none; border-radius: 99px;">All</button>
+        <div class="college-filter">
+          <button class="filter-btn" id="collegeEngineering" onclick="setFilter('college','engineering')" style="border:none;background:transparent;border-radius:99px;">Engineering</button>
+          <button class="filter-btn" id="collegeTechnology" onclick="setFilter('college','technology')" style="border:none;background:transparent;border-radius:99px;">Technology</button>
+          <button class="filter-btn active" id="collegeAll" onclick="setFilter('college','all')" style="border:none;border-radius:99px;">All</button>
         </div>
       </div>
 
-      <!-- Role Filter -->
-      <div class="card anim anim-1" style="display: flex; justify-content: center; padding: 16px; margin-bottom: 32px; border-radius: 16px; background: var(--surface);">
-        <div style="display: flex; gap: 8px;">
-          <button class="filter-btn active" id="roleStudents" onclick="setFilter('role','students')" style="padding: 10px 40px; font-size: 14px; border:none; border-radius: 99px; background: #8b5cf6; color: #fff;">👥 Students</button>
-          <button class="filter-btn" id="roleFaculty" onclick="setFilter('role','faculty')" style="padding: 10px 40px; font-size: 14px; border:none; border-radius: 99px; background: transparent; color: var(--text2);">🎓 Faculty</button>
+      <div class="card anim anim-1" style="padding:16px;margin-bottom:32px;border-radius:16px;">
+        <div class="role-filter">
+          <button class="filter-btn active" id="roleStudents" onclick="setFilter('role','students')" style="padding:10px 40px;font-size:14px;border:none;border-radius:99px;background:#8b5cf6;color:#fff;">👥 Students</button>
+          <button class="filter-btn" id="roleFaculty" onclick="setFilter('role','faculty')" style="padding:10px 40px;font-size:14px;border:none;border-radius:99px;background:transparent;color:var(--text2);">🎓 Faculty</button>
         </div>
       </div>
 
@@ -54,7 +68,7 @@
             <span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>LIVE
           </span>
         </div>
-        <canvas id="adminBarChart" height="80"></canvas>
+        <div class="chart-container"><canvas id="adminBarChart" height="100"></canvas></div>
       </div>
 
       <!-- Completion Rate -->
