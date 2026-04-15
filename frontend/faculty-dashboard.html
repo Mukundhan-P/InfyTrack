@@ -27,7 +27,7 @@
             <div class="card-title">Progress by Type</div>
             <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#22c55e;font-weight:600;"><span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>LIVE</span>
           </div>
-          <canvas id="barChart" height="100" style="background:transparent;"></canvas>
+          <div style="position:relative;width:100%;height:300px;"><canvas id="barChart"></canvas></div>
         </div>
       </div>
       <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}</style>
@@ -99,7 +99,18 @@
             { label:'Completed', data:completedByType, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.15)', pointBackgroundColor:'#10b981', pointRadius:5, pointHoverRadius:7, fill:true, tension:0.5, borderWidth:3 },
             { label:'In Progress', data:doingByType, borderColor:'#3b28cc', backgroundColor:'rgba(59,40,204,0.1)', pointBackgroundColor:'#3b28cc', pointRadius:5, pointHoverRadius:7, fill:true, tension:0.5, borderWidth:3 },
           ]},
-          options: { responsive:true, plugins:{legend:{labels:{color:'#475569',font:{size:12}}}}, scales:{ x:{ticks:{color:'#475569'},grid:{color:'rgba(0,0,0,0.06)'}}, y:{ticks:{color:'#475569',stepSize:1,precision:0},grid:{color:'rgba(0,0,0,0.06)'},beginAtZero:true} } }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position:'top', labels:{ color:'#475569', font:{size:13}, padding:20, boxWidth:14 } }
+            },
+            scales: {
+              x: { ticks:{ color:'#475569', font:{size:12} }, grid:{ color:'rgba(0,0,0,0.06)' }, border:{ display:false } },
+              y: { ticks:{ color:'#475569', stepSize:1, precision:0, font:{size:12}, padding:8 }, grid:{ color:'rgba(0,0,0,0.06)' }, beginAtZero:true, border:{ display:false } }
+            },
+            layout: { padding:{ top:10, bottom:10, left:8, right:8 } }
+          }
         });
 
         const tbody = document.getElementById('subBody');
