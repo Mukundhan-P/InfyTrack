@@ -155,11 +155,22 @@
       btn.disabled = true; btn.textContent = 'Sending...';
       try {
         const email = user.email;
-        await apiCall('POST', '/auth/send-password-reset', { email });
-        showAlert('pwAlertBox', '📧 Verification email sent to ' + email + '. Check your inbox and click the link to verify.', 'success');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch(`${API}/auth/send-password-reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Auth.getToken()}` },
+          body: JSON.stringify({ email }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        showAlert('pwAlertBox', '📧 Verification email sent to ' + email + '. Check your inbox.', 'success');
         btn.textContent = '✅ Email Sent';
       } catch (e) {
-        showAlert('pwAlertBox', e.message, 'error');
+        const msg = e.name === 'AbortError' ? 'Request timed out. Server may be waking up, try again in 30 seconds.' : e.message;
+        showAlert('pwAlertBox', msg, 'error');
         btn.disabled = false; btn.textContent = '📧 Send Verification Email';
       }
     }
