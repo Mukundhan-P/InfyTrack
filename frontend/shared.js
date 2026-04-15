@@ -1,4 +1,4 @@
-const API = 'https://infytrack.onrender.com/api/login';
+const API = 'https://infytrack.onrender.com/api';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCArOuHQ0ElfKfsPALTNB6cNAwieELnMfY",
