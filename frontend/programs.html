@@ -8,7 +8,8 @@
     .prog-cards { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
     .pc { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow); }
     .pc-top { padding: 20px 24px 16px; }
-    .pc-bottom { padding: 16px 24px 20px; border-top: 1px solid var(--border); background: var(--surface2); display: flex; gap: 10px; }
+    .pc-bottom { padding: 16px 24px 20px; border-top: 1px solid var(--border); background: var(--surface2); display: flex; gap: 10px; flex-wrap: wrap; }
+    .pc-bottom .btn { flex: 1; min-width: 120px; justify-content: center; }
     .pc-name { font-family: var(--font-head); font-size: 17px; font-weight: 700; margin: 10px 0 6px; }
     .pc-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
     .pc-meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
@@ -17,6 +18,13 @@
     .filter-btn { padding: 8px 20px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
     .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    @media (max-width: 768px) {
+      .prog-cards { grid-template-columns: 1fr; gap: 14px; }
+      .pc-top { padding: 16px; }
+      .pc-bottom { padding: 12px 16px 16px; flex-direction: column; }
+      .pc-bottom .btn { width: 100%; min-width: unset; }
+      .pc-name { font-size: 15px; }
+    }
   </style>
 </head>
 <body>
