@@ -32,6 +32,12 @@
 
     .auth-footer { text-align: center; padding: 0 36px 24px; font-size: 13px; color: var(--text3); }
     .auth-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
+
+    /* CAPTCHA */
+    .captcha-wrap { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+    .captcha-canvas { border-radius:8px; border:1.5px solid var(--border2); cursor:pointer; flex-shrink:0; }
+    .captcha-input { flex:1; }
+    .captcha-hint { font-size:11px; color:var(--text3); margin-top:4px; font-family:var(--font-mono); }
   </style>
 </head>
 <body>
@@ -65,6 +71,14 @@
           <div id="sLoginPanel">
             <div class="form-group"><label class="form-label">College Email <span class="req">*</span></label><input type="email" id="sLoginEmail" class="form-control" placeholder="yourname@stjosephs.ac.in"/></div>
             <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input type="password" id="sLoginPass" class="form-control" placeholder="Enter password"/></div>
+            <div class="form-group">
+              <label class="form-label">CAPTCHA Verification <span class="req">*</span></label>
+              <div class="captcha-wrap">
+                <canvas id="sCaptchaCanvas" class="captcha-canvas" width="160" height="48" title="Click to refresh"></canvas>
+                <input type="text" id="sCaptchaInput" class="form-control captcha-input" placeholder="Enter code above" maxlength="6" autocomplete="off"/>
+              </div>
+              <div class="captcha-hint">🔄 Click the image to refresh</div>
+            </div>
             <button class="btn btn-primary btn-full btn-lg" id="sLoginBtn" onclick="doStudentLogin()">Login →</button>
           </div>
           <!-- Student Register -->
@@ -110,6 +124,14 @@
           <div id="fLoginPanel">
             <div class="form-group"><label class="form-label">Faculty Email <span class="req">*</span></label><input type="email" id="fLoginEmail" class="form-control" placeholder="faculty@stjosephs.ac.in"/></div>
             <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input type="password" id="fLoginPass" class="form-control" placeholder="Enter password"/></div>
+            <div class="form-group">
+              <label class="form-label">CAPTCHA Verification <span class="req">*</span></label>
+              <div class="captcha-wrap">
+                <canvas id="fCaptchaCanvas" class="captcha-canvas" width="160" height="48" title="Click to refresh"></canvas>
+                <input type="text" id="fCaptchaInput" class="form-control captcha-input" placeholder="Enter code above" maxlength="6" autocomplete="off"/>
+              </div>
+              <div class="captcha-hint">🔄 Click the image to refresh</div>
+            </div>
             <button class="btn btn-primary btn-full btn-lg" id="fLoginBtn" onclick="doFacultyLogin()" style="background:#10b981;">Login as Faculty →</button>
           </div>
           <!-- Faculty Register -->
@@ -143,6 +165,14 @@
         <div id="portalAdmin" style="display:none;">
           <div class="form-group"><label class="form-label">Admin Email <span class="req">*</span></label><input type="email" id="aLoginEmail" class="form-control" placeholder="admin@stjosephs.ac.in"/></div>
           <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input type="password" id="aLoginPass" class="form-control" placeholder="Enter password"/></div>
+          <div class="form-group">
+            <label class="form-label">CAPTCHA Verification <span class="req">*</span></label>
+            <div class="captcha-wrap">
+              <canvas id="aCaptchaCanvas" class="captcha-canvas" width="160" height="48" title="Click to refresh"></canvas>
+              <input type="text" id="aCaptchaInput" class="form-control captcha-input" placeholder="Enter code above" maxlength="6" autocomplete="off"/>
+            </div>
+            <div class="captcha-hint">🔄 Click the image to refresh</div>
+          </div>
           <button class="btn btn-full btn-lg" id="aLoginBtn" onclick="doAdminLogin()" style="background:#1e1060;color:#fff;">Login as Admin →</button>
         </div>
 
@@ -153,6 +183,59 @@
 
   <script src="shared.js"></script>
   <script>
+    // ── CAPTCHA ENGINE ──────────────────────────────────
+    const captchas = {};
+    const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function drawCaptcha(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      let code = '';
+      for (let i = 0; i < 6; i++) code += CHARS[Math.floor(Math.random() * CHARS.length)];
+      captchas[canvasId] = code;
+      ctx.fillStyle = '#f0f2f8'; ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = `rgba(${rand(80,180)},${rand(80,180)},${rand(80,180)},0.5)`;
+        ctx.beginPath(); ctx.arc(rand(0,w), rand(0,h), rand(1,3), 0, Math.PI*2); ctx.fill();
+      }
+      for (let i = 0; i < 4; i++) {
+        ctx.strokeStyle = `rgba(${rand(100,200)},${rand(100,200)},${rand(100,200)},0.4)`;
+        ctx.lineWidth = 1; ctx.beginPath();
+        ctx.moveTo(rand(0,w), rand(0,h)); ctx.lineTo(rand(0,w), rand(0,h)); ctx.stroke();
+      }
+      const colors = ['#3b28cc','#7c3aed','#1d4ed8','#065f46','#92400e','#991b1b'];
+      for (let i = 0; i < code.length; i++) {
+        ctx.save();
+        ctx.font = `bold ${rand(22,28)}px Arial`;
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.translate(14 + i * 24, h/2 + rand(-4,4));
+        ctx.rotate(rand(-15,15) * Math.PI / 180);
+        ctx.fillText(code[i], 0, 8);
+        ctx.restore();
+      }
+      canvas.onclick = () => { drawCaptcha(canvasId); document.getElementById(canvasId.replace('Canvas','Input')).value = ''; };
+    }
+
+    function checkCaptcha(canvasId) {
+      const entered = document.getElementById(canvasId.replace('Canvas','Input')).value.trim();
+      if (entered !== captchas[canvasId]) {
+        showAlert('alertBox', '❌ Incorrect CAPTCHA. Please try again.', 'error');
+        drawCaptcha(canvasId);
+        document.getElementById(canvasId.replace('Canvas','Input')).value = '';
+        return false;
+      }
+      return true;
+    }
+
+    window.addEventListener('load', () => {
+      drawCaptcha('sCaptchaCanvas');
+      drawCaptcha('fCaptchaCanvas');
+      drawCaptcha('aCaptchaCanvas');
+    });
+
     function switchPortal(portal) {
       ['student','faculty','admin'].forEach(p => {
         document.getElementById('portal' + p.charAt(0).toUpperCase() + p.slice(1)).style.display = p === portal ? '' : 'none';
@@ -162,6 +245,9 @@
       });
       const titles = { student: 'Student Portal', faculty: 'Faculty Portal', admin: 'Admin Portal' };
       document.getElementById('portalTitle').textContent = titles[portal];
+      const map = { student:'sCaptchaCanvas', faculty:'fCaptchaCanvas', admin:'aCaptchaCanvas' };
+      drawCaptcha(map[portal]);
+      document.getElementById(map[portal].replace('Canvas','Input')).value = '';
     }
 
     function switchTab(portal, tab) {
@@ -177,6 +263,7 @@
       const email = document.getElementById('sLoginEmail').value.trim();
       const pass  = document.getElementById('sLoginPass').value;
       if (!email || !pass) return showAlert('alertBox', 'Please fill all fields.', 'error');
+      if (!checkCaptcha('sCaptchaCanvas')) return;
       const btn = document.getElementById('sLoginBtn');
       btn.disabled = true; btn.textContent = 'Logging in...';
       try {
@@ -186,7 +273,7 @@
         Auth.setToken(data.token); Auth.setUser(data.student);
         showAlert('alertBox', 'Login successful! Redirecting...', 'success');
         setTimeout(() => window.location.href = 'dashboard.html', 1000);
-      } catch (err) { showAlert('alertBox', err.message, 'error'); btn.disabled = false; btn.textContent = 'Login →'; }
+      } catch (err) { showAlert('alertBox', err.message, 'error'); btn.disabled = false; btn.textContent = 'Login →'; drawCaptcha('sCaptchaCanvas'); document.getElementById('sCaptchaInput').value=''; }
     }
 
     // ── Student Register ───────────────────────────────
@@ -220,6 +307,7 @@
       const email = document.getElementById('fLoginEmail').value.trim();
       const pass  = document.getElementById('fLoginPass').value;
       if (!email || !pass) return showAlert('alertBox', 'Please fill all fields.', 'error');
+      if (!checkCaptcha('fCaptchaCanvas')) return;
       const btn = document.getElementById('fLoginBtn');
       btn.disabled = true; btn.textContent = 'Logging in...';
       try {
@@ -229,7 +317,7 @@
         Auth.setToken(data.token); Auth.setFaculty(data.faculty);
         showAlert('alertBox', 'Login successful! Redirecting...', 'success');
         setTimeout(() => window.location.href = 'faculty-dashboard.html', 1000);
-      } catch (err) { showAlert('alertBox', err.message, 'error'); btn.disabled = false; btn.textContent = 'Login as Faculty →'; }
+      } catch (err) { showAlert('alertBox', err.message, 'error'); btn.disabled = false; btn.textContent = 'Login as Faculty →'; drawCaptcha('fCaptchaCanvas'); document.getElementById('fCaptchaInput').value=''; }
     }
 
     // ── Faculty Register ───────────────────────────────
@@ -261,6 +349,7 @@
       const email = document.getElementById('aLoginEmail').value.trim();
       const pass  = document.getElementById('aLoginPass').value;
       if (!email || !pass) return showAlert('alertBox', 'Please fill all fields.', 'error');
+      if (!checkCaptcha('aCaptchaCanvas')) return;
       const btn = document.getElementById('aLoginBtn');
       btn.disabled = true; btn.textContent = 'Logging in...';
       try {
@@ -270,7 +359,7 @@
         Auth.setToken(data.token); Auth.setAdmin(data.admin);
         showAlert('alertBox', 'Login successful! Redirecting...', 'success');
         setTimeout(() => window.location.href = 'admin-dashboard.html', 1000);
-      } catch (err) { showAlert('alertBox', err.message, 'error'); btn.disabled = false; btn.textContent = 'Login as Admin →'; }
+      } catch (err) { showAlert('alertBox', err.message, 'error'); btn.disabled = false; btn.textContent = 'Login as Admin →'; drawCaptcha('aCaptchaCanvas'); document.getElementById('aCaptchaInput').value=''; }
     }
   </script>
 </body>
