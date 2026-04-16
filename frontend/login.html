@@ -39,7 +39,11 @@
     .captcha-input { flex:1; }
     .captcha-hint { font-size:11px; color:var(--text3); margin-top:4px; font-family:var(--font-mono); }
 
-    /* PASSWORD TOGGLE */
+    /* FORGOT PASSWORD */
+    .forgot-link { font-size:12px; color:var(--primary); cursor:pointer; text-align:right; display:block; margin-top:6px; margin-bottom:14px; font-weight:600; background:none; border:none; padding:0; width:100%; }
+    .forgot-link:hover { text-decoration:underline; }
+    .forgot-box { background:var(--bg); border-radius:10px; padding:16px; margin-bottom:16px; border:1px solid var(--border); }
+    .forgot-box p { font-size:13px; color:var(--text2); margin-bottom:12px; line-height:1.5; }
     .pass-wrap { position:relative; }
     .pass-wrap .form-control { padding-right: 40px; }
     .pass-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text3); background:none; border:none; padding:0; display:flex; align-items:center; }
@@ -86,6 +90,12 @@
               <div class="captcha-hint">🔄 Click the image to refresh</div>
             </div>
             <button class="btn btn-primary btn-full btn-lg" id="sLoginBtn" onclick="doStudentLogin()">Login →</button>
+            <button class="forgot-link" onclick="toggleForgot('s')">Forgot Password?</button>
+            <div id="sForgotBox" class="forgot-box" style="display:none;">
+              <p>Enter your registered email. We'll send a password reset link.</p>
+              <div class="form-group" style="margin-bottom:10px;"><input type="email" id="sForgotEmail" class="form-control" placeholder="yourname@stjosephs.ac.in"/></div>
+              <button class="btn btn-primary" id="sForgotBtn" onclick="sendForgot('s')">📧 Send Reset Link</button>
+            </div>
           </div>
           <!-- Student Register -->
           <div id="sRegisterPanel" style="display:none;">
@@ -139,6 +149,12 @@
               <div class="captcha-hint">🔄 Click the image to refresh</div>
             </div>
             <button class="btn btn-primary btn-full btn-lg" id="fLoginBtn" onclick="doFacultyLogin()" style="background:#10b981;">Login as Faculty →</button>
+            <button class="forgot-link" onclick="toggleForgot('f')">Forgot Password?</button>
+            <div id="fForgotBox" class="forgot-box" style="display:none;">
+              <p>Enter your registered email. We'll send a password reset link.</p>
+              <div class="form-group" style="margin-bottom:10px;"><input type="email" id="fForgotEmail" class="form-control" placeholder="faculty@stjosephs.ac.in"/></div>
+              <button class="btn btn-primary" id="fForgotBtn" onclick="sendForgot('f')" style="background:#10b981;">📧 Send Reset Link</button>
+            </div>
           </div>
           <!-- Faculty Register -->
           <div id="fRegisterPanel" style="display:none;">
@@ -180,6 +196,12 @@
             <div class="captcha-hint">🔄 Click the image to refresh</div>
           </div>
           <button class="btn btn-full btn-lg" id="aLoginBtn" onclick="doAdminLogin()" style="background:#1e1060;color:#fff;">Login as Admin →</button>
+          <button class="forgot-link" onclick="toggleForgot('a')">Forgot Password?</button>
+          <div id="aForgotBox" class="forgot-box" style="display:none;">
+            <p>Enter your registered email. We'll send a password reset link.</p>
+            <div class="form-group" style="margin-bottom:10px;"><input type="email" id="aForgotEmail" class="form-control" placeholder="admin@stjosephs.ac.in"/></div>
+            <button class="btn btn-full" id="aForgotBtn" onclick="sendForgot('a')" style="background:#1e1060;color:#fff;">📧 Send Reset Link</button>
+          </div>
         </div>
 
       </div>
@@ -189,6 +211,37 @@
 
   <script src="shared.js"></script>
   <script>
+    function toggleForgot(prefix) {
+      const box = document.getElementById(prefix + 'ForgotBox');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function sendForgot(prefix) {
+      const email = document.getElementById(prefix + 'ForgotEmail').value.trim();
+      if (!email) return showAlert('alertBox', 'Please enter your email.', 'error');
+      const btn = document.getElementById(prefix + 'ForgotBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000);
+        const res = await fetch(`${API}/auth/send-password-reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        showAlert('alertBox', '✅ Reset link sent to ' + email + '. Check your inbox.', 'success');
+        btn.textContent = '✅ Email Sent';
+      } catch (e) {
+        const msg = e.name === 'AbortError' ? 'Server is waking up, please try again in a moment.' : e.message;
+        showAlert('alertBox', msg, 'error');
+        btn.disabled = false; btn.textContent = '📧 Send Reset Link';
+      }
+    }
+
     function togglePass(id, btn) {
       const inp = document.getElementById(id);
       const show = inp.type === 'password';
