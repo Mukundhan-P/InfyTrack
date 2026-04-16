@@ -38,6 +38,12 @@
     .captcha-canvas { border-radius:8px; border:1.5px solid var(--border2); cursor:pointer; flex-shrink:0; }
     .captcha-input { flex:1; }
     .captcha-hint { font-size:11px; color:var(--text3); margin-top:4px; font-family:var(--font-mono); }
+
+    /* PASSWORD TOGGLE */
+    .pass-wrap { position:relative; }
+    .pass-wrap .form-control { padding-right: 40px; }
+    .pass-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text3); background:none; border:none; padding:0; display:flex; align-items:center; }
+    .pass-eye:hover { color:var(--text2); }
   </style>
 </head>
 <body>
@@ -70,7 +76,7 @@
           <!-- Student Login -->
           <div id="sLoginPanel">
             <div class="form-group"><label class="form-label">College Email <span class="req">*</span></label><input type="email" id="sLoginEmail" class="form-control" placeholder="yourname@stjosephs.ac.in"/></div>
-            <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input type="password" id="sLoginPass" class="form-control" placeholder="Enter password"/></div>
+            <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><div class="pass-wrap"><input type="password" id="sLoginPass" class="form-control" placeholder="Enter password"/><button class="pass-eye" type="button" onclick="togglePass('sLoginPass',this)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
             <div class="form-group">
               <label class="form-label">CAPTCHA Verification <span class="req">*</span></label>
               <div class="captcha-wrap">
@@ -123,7 +129,7 @@
           <!-- Faculty Login -->
           <div id="fLoginPanel">
             <div class="form-group"><label class="form-label">Faculty Email <span class="req">*</span></label><input type="email" id="fLoginEmail" class="form-control" placeholder="faculty@stjosephs.ac.in"/></div>
-            <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input type="password" id="fLoginPass" class="form-control" placeholder="Enter password"/></div>
+            <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><div class="pass-wrap"><input type="password" id="fLoginPass" class="form-control" placeholder="Enter password"/><button class="pass-eye" type="button" onclick="togglePass('fLoginPass',this)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
             <div class="form-group">
               <label class="form-label">CAPTCHA Verification <span class="req">*</span></label>
               <div class="captcha-wrap">
@@ -164,7 +170,7 @@
         <!-- ═══ ADMIN PORTAL ═══ -->
         <div id="portalAdmin" style="display:none;">
           <div class="form-group"><label class="form-label">Admin Email <span class="req">*</span></label><input type="email" id="aLoginEmail" class="form-control" placeholder="admin@stjosephs.ac.in"/></div>
-          <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input type="password" id="aLoginPass" class="form-control" placeholder="Enter password"/></div>
+          <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><div class="pass-wrap"><input type="password" id="aLoginPass" class="form-control" placeholder="Enter password"/><button class="pass-eye" type="button" onclick="togglePass('aLoginPass',this)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <div class="form-group">
             <label class="form-label">CAPTCHA Verification <span class="req">*</span></label>
             <div class="captcha-wrap">
@@ -183,6 +189,15 @@
 
   <script src="shared.js"></script>
   <script>
+    function togglePass(id, btn) {
+      const inp = document.getElementById(id);
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.innerHTML = show
+        ? '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    }
+
     // ── CAPTCHA ENGINE ──────────────────────────────────
     const captchas = {};
     const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
