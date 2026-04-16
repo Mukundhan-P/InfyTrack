@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reports – Admin – CompanyConnect</title>
+  <title>Reports – Admin – InfyTrack</title>
   <link rel="stylesheet" href="shared.css"/>
 </head>
 <body>
   <nav class="navbar">
-    <a href="index.html" class="nav-brand" style="text-decoration:none;"><img src="bee2.jpeg" alt="StudentsConnect Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover; margin-right: 8px;"><div><div class="brand-name">CompanyConnect</div><div class="brand-sub">Admin Panel</div></div></a>
+    <a href="index.html" class="nav-brand" style="text-decoration:none;"><img src="bee2.jpeg" alt="StudentsConnect Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover; margin-right: 8px;"><div><div class="brand-name">InfyTrack</div><div class="brand-sub">Academic Activity Dashboard</div></div></a>
     <div class="nav-links"><span id="navAdmin" style="color:rgba(255,255,255,0.7);font-size:13px;"></span><a href="admin-login.html" onclick="doLogout('admin-login.html')" class="btn-nav">Logout</a></div>
   </nav>
   <div class="app-layout">
@@ -130,11 +130,11 @@
       win.document.write(`<html><head><title>${title}</title>
         <style>body{font-family:Arial;padding:20px;}h1{color:#3b28cc;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#3b28cc;color:#fff;padding:8px 10px;text-align:left;font-size:11px;}td{padding:7px 10px;border-bottom:1px solid #e2e6f0;font-size:11px;}tr:hover{background:#f7f8fc;}.footer{margin-top:30px;font-size:10px;color:#94a3b8;}</style>
         </head><body>
-        <h1>CompanyConnect – ${title}</h1>
+        <h1>InfyTrack – ${title}</h1>
         <p style="color:#64748b;font-size:12px;">Generated: ${new Date().toLocaleString('en-IN')}</p>
         <table><thead><tr>${keys.map(k => `<th>${k}</th>`).join('')}</tr></thead>
         <tbody>${currentData.map(row => `<tr>${keys.map(k => `<td>${row[k] ?? '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>
-        <div class="footer">Total: ${currentData.length} records | CompanyConnect</div>
+        <div class="footer">Total: ${currentData.length} records | InfyTrack</div>
         </body></html>`);
       win.document.close();
       setTimeout(() => win.print(), 500);
